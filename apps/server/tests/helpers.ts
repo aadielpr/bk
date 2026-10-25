@@ -1,7 +1,3 @@
-// Shared test harness for endpoint tests.
-// Each suite gets its own app instance, port, and DB connection, with a
-// truncated database and a fresh Super Admin before every test.
-
 import type { Server } from "node:http";
 import postgres from "postgres";
 import { createApp } from "../src/app.js";
@@ -34,11 +30,12 @@ export function setupSuite(port: number) {
     await sql.end();
   }
 
-  // Truncate everything, then insert a known Super Admin (superpass123).
+  // Truncate everything, then insert the Super Admin from the environment,
+  // so suites log in with the same credentials the operator configured.
   async function beforeEach() {
     await sql`TRUNCATE coop_assignments, coops, users, farms RESTART IDENTITY CASCADE`;
     await sql`INSERT INTO users (username, password_hash, role)
-              VALUES ('superadmin', ${await Bun.password.hash("superpass123")}, 'super_admin')`;
+              VALUES (${config.superAdminUsername}, ${await Bun.password.hash(config.superAdminPassword)}, 'super_admin')`;
     seq = 0;
   }
 
@@ -53,7 +50,7 @@ export function setupSuite(port: number) {
   }
 
   async function superAdminToken(): Promise<string> {
-    const { body } = await login("superadmin", "superpass123");
+    const { body } = await login(config.superAdminUsername, config.superAdminPassword);
     return body.token;
   }
 
