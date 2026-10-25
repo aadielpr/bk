@@ -30,6 +30,7 @@ export async function requireAuth(
     return;
   }
 
+  // Fresh DB check: deactivation takes effect immediately, even for a valid token.
   const [user] = await db
     .select()
     .from(users)
