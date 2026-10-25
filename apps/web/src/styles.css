@@ -1,0 +1,62 @@
+/* Minimal styling for the admin/recording workspace */
+* { box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  background: #f4f5f7;
+  color: #1c2733;
+}
+header.bar {
+  background: #1c2733;
+  color: #fff;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+header.bar .spacer { flex: 1; }
+header.bar a { color: #cfd8e3; text-decoration: none; }
+header.bar a.active { color: #fff; font-weight: 600; }
+main { max-width: 860px; margin: 24px auto; padding: 0 16px; }
+h1 { font-size: 20px; margin: 8px 0 16px; }
+h2 { font-size: 16px; margin: 20px 0 8px; }
+.card {
+  background: #fff;
+  border: 1px solid #e3e7ec;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eceff2; font-size: 14px; }
+button {
+  background: #2563eb;
+  border: none;
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+button.secondary { background: #eef2f7; color: #1c2733; }
+button.danger { background: #dc2626; }
+button:disabled { opacity: 0.5; cursor: default; }
+input, select {
+  padding: 7px 10px;
+  border: 1px solid #cfd8e3;
+  border-radius: 6px;
+  font-size: 14px;
+}
+label { display: block; font-size: 13px; margin: 10px 0 4px; color: #45566b; }
+.error { color: #b91c1c; font-size: 14px; margin-top: 8px; }
+.notice { color: #047857; font-size: 14px; margin-top: 8px; }
+.login-wrap {
+  max-width: 360px;
+  margin: 12vh auto;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #e3e7ec;
+  border-radius: 10px;
+}
+.row { display: flex; gap: 8px; align-items: center; }
+.muted { color: #6b7a8d; font-size: 13px; }

@@ -2,6 +2,17 @@
 
 Manages the daily lifecycle, feed consumption, flock mortality, medication expenditure, and final production performance metrics for commercial broiler chicken farming.
 
+## Technology Stack
+
+- **Web:** Solid.js single-page application (SPA)
+- **Mobile:** Expo
+- **Server:** Express
+- **Language:** TypeScript across web, mobile, and server
+- **Runtime and package manager:** Bun
+- **Database:** PostgreSQL
+- **Cache:** Redis
+- **Object storage:** Cloudflare R2
+
 ## Language
 
 **Flock**:
@@ -20,15 +31,15 @@ A physical chicken house within a Broiler Farm where a Flock is reared. Only one
 _Avoid_: House, unit
 
 **Farm Membership**:
-A person's access to one or more Broiler Farms through an Owner or Operator account; one farm account cannot have both roles. The Super Admin account is separate and has app-wide access.
-_Avoid_: Account role
+A farm account's attachment to exactly one Broiler Farm with exactly one role, Owner or Operator; a person involved in multiple farms has separate accounts. The Super Admin account is separate and has app-wide access.
+_Avoid_: Account role, multi-farm membership
 
 **Owner**:
-An account type that can access all coops in each farm it belongs to and is the only farm account type that can start or close a Production Cycle.
+An account type that can access all coops in its farm and is the only farm account type that can start or close a Production Cycle.
 _Avoid_: Admin
 
 **Operator**:
-A distinct account type that can record activity only for coops assigned to it in the farms it belongs to. An Operator account cannot start or close a Production Cycle.
+A distinct account type that can record activity only for coops assigned to it in its farm. An Operator account cannot start or close a Production Cycle.
 _Avoid_: Caretaker
 
 **Production Cycle (Siklus)**:
