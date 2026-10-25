@@ -1,3 +1,8 @@
+// Shared test harness for endpoint tests.
+// Each suite gets its own app instance and DB connection, bound to PORT from
+// the environment, with a truncated database and a fresh Super Admin before
+// every test. Bun runs test files sequentially, so suites can share the port.
+
 import type { Server } from "node:http";
 import postgres from "postgres";
 import { createApp } from "../src/app.js";
@@ -15,14 +20,14 @@ export interface FarmRow {
   name: string;
 }
 
-export function setupSuite(port: number) {
-  const BASE = `http://localhost:${port}`;
+export function setupSuite() {
+  const BASE = `http://localhost:${config.port}`;
   const sql = postgres(config.databaseUrl, { max: 1 });
   let server: Server | undefined;
   let seq = 0;
 
   async function beforeAll() {
-    server = createApp().listen(port);
+    server = createApp().listen(config.port);
   }
 
   async function afterAll() {
@@ -106,5 +111,6 @@ export function setupSuite(port: number) {
     adminFetch,
     provisionUser,
     createFarm,
+    BASE,
   };
 }

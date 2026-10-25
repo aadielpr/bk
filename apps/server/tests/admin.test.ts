@@ -3,7 +3,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import { setupSuite } from "./helpers.js";
 
-const t = setupSuite(4002);
+const t = setupSuite();
 
 beforeAll(t.beforeAll);
 afterAll(t.afterAll);
@@ -63,7 +63,7 @@ describe("Super Admin provisioning", () => {
       body: JSON.stringify({ isActive: false }),
     });
 
-    const res = await fetch("http://localhost:4002/api/auth/me", {
+    const res = await fetch(`${t.BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${ownerToken}` },
     });
     expect(res.status).toBe(401);

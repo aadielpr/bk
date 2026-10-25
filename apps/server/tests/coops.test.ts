@@ -4,8 +4,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import { setupSuite } from "./helpers.js";
 
-const t = setupSuite(4003);
-const BASE = "http://localhost:4003";
+const t = setupSuite();
+const BASE = t.BASE;
 
 beforeAll(t.beforeAll);
 afterAll(t.afterAll);

@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:tes
 import { config } from "../src/config.js";
 import { setupSuite } from "./helpers.js";
 
-const t = setupSuite(4001);
+const t = setupSuite();
 const SA_USER = config.superAdminUsername;
 const SA_PASS = config.superAdminPassword;
 
