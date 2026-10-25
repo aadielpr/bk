@@ -2,7 +2,6 @@ import { createResource, createSignal, For, Show } from "solid-js";
 import { api } from "../api";
 import type { Farm } from "@bk/shared";
 
-// Super Admin: create farms and list the existing ones.
 export default function FarmsPage() {
   const [farms, { refetch }] = createResource(() => api<Farm[]>("/api/admin/farms"));
   const [name, setName] = createSignal("");

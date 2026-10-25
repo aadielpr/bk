@@ -1,7 +1,6 @@
 import { createResource, createSignal, For, Show } from "solid-js";
 import { api } from "../api";
 
-// Section component — rendered on the coop page for every role.
 export default function ChangePasswordSection() {
   const [current, setCurrent] = createSignal("");
   const [next, setNext] = createSignal("");

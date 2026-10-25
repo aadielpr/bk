@@ -1,6 +1,3 @@
-// Coop endpoints: role-scoped listing, owner-only management, and operator
-// assignment boundaries.
-
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import {
   adminFetch,
@@ -18,8 +15,6 @@ beforeAll(startServer);
 afterAll(closeServer);
 beforeEach(resetDb);
 
-// Standard fixture: two farms, owners on both, one operator on farm A
-// assigned to its first coop.
 async function seededScenario() {
   const adminToken = await superAdminToken();
   const farmA = await createFarm(adminToken, "Farm A");

@@ -1,4 +1,3 @@
-// Super Admin endpoints: farm + user provisioning, deactivation, password reset.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import {

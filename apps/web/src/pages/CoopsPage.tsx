@@ -8,9 +8,6 @@ interface Operator {
   username: string;
 }
 
-// Coop list — the landing view for every role. Owners get manage controls
-// (create, rename, assign Operators), Operators see their assigned coops
-// read-only, Super Admin sees everything.
 export default function CoopsPage(props: { user: AuthUser }) {
   const [coops, { refetch }] = createResource(() => api<Coop[]>("/api/coops"));
   const [operators] = createResource(

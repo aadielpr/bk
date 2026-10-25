@@ -1,6 +1,3 @@
-// Shared endpoint-test harness. Exports plain functions and constants —
-// test files register beforeAll/afterAll/beforeEach themselves.
-
 import type { Server } from "node:http";
 import postgres from "postgres";
 import { createApp } from "../src/app.js";
@@ -23,8 +20,6 @@ export function closeServer() {
   server?.close();
 }
 
-// Truncate everything, then insert the Super Admin from the environment,
-// so suites log in with the same credentials the operator configured.
 export async function resetDb() {
   await sql`TRUNCATE coop_assignments, coops, users, farms RESTART IDENTITY CASCADE`;
   await sql`INSERT INTO users (username, password_hash, role)

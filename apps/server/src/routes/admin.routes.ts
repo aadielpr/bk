@@ -136,7 +136,6 @@ adminRouter.patch("/users/:id/password", async (req, res) => {
   res.json({ ok: true });
 });
 
-// Operators available for coop assignment, scoped to one farm.
 adminRouter.get("/operators", async (req, res) => {
   const farmId = Number(req.query.farmId);
   if (!farmId) {

@@ -55,7 +55,6 @@ coopRouter.get("/", async (req, res) => {
     return;
   }
 
-  // Operator: only assigned coops.
   const assigned = await db
     .select({ coopId: coopAssignments.coopId })
     .from(coopAssignments)
@@ -64,7 +63,6 @@ coopRouter.get("/", async (req, res) => {
   res.json(await listCoops({ coopIds: assigned.map((a) => a.coopId) }));
 });
 
-// Operators of the owner's farm, for coop assignment UI.
 coopRouter.get(
   "/operators",
   requireAuth,
@@ -169,7 +167,6 @@ coopRouter.put(
       return;
     }
 
-    // Every operator must belong to the owner's farm.
     const operators = parsed.data.operatorIds.length
       ? await db
           .select()

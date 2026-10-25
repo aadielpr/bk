@@ -1,6 +1,5 @@
 export const config = {
   port: Number(process.env.PORT ?? 3000),
-  // Connection URLs come from the environment, set by the operator. No fallback credentials.
   databaseUrl: requiredEnv("DATABASE_URL"),
   redisUrl: process.env.REDIS_URL,
   jwtSecret: requiredEnv("JWT_SECRET"),

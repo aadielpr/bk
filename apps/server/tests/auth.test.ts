@@ -1,4 +1,3 @@
-// Auth endpoints: login, session identity, and password change.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import {

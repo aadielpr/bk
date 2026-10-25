@@ -2,7 +2,6 @@ import { createResource, createSignal, For, Show } from "solid-js";
 import { api } from "../api";
 import type { AuthUser, Farm } from "@bk/shared";
 
-// Super Admin: list users, provision new ones, deactivate/reactivate, reset passwords.
 export default function UsersPage() {
   const [users, { refetch }] = createResource(() => api<AuthUser[]>("/api/admin/users"));
   const [farms] = createResource(() => api<Farm[]>("/api/admin/farms"));

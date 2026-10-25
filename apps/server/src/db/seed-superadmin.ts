@@ -4,8 +4,6 @@ import { config } from "../config.js";
 import { db } from "./client.js";
 import { users } from "./schema.js";
 
-// One-time bootstrap of the Super Admin account. Run manually at deploy:
-//   SUPER_ADMIN_USERNAME=... SUPER_ADMIN_PASSWORD=... bun src/db/seed-superadmin.ts
 if (!config.superAdminUsername || !config.superAdminPassword) {
   console.error(
     "SUPER_ADMIN_USERNAME and SUPER_ADMIN_PASSWORD env vars are required",

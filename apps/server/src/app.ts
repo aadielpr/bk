@@ -13,7 +13,6 @@ export function createApp() {
   app.use("/api/admin", adminRouter);
   app.use("/api/coops", coopRouter);
 
-  // JSON error handler (bad JSON bodies, unexpected failures)
   app.use(
     (
       err: unknown,

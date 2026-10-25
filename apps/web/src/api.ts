@@ -1,4 +1,3 @@
-// Small auth-aware fetch wrapper. Token lives in localStorage.
 const TOKEN_KEY = "bk_token";
 const USER_KEY = "bk_user";
 

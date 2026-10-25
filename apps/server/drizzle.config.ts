@@ -1,7 +1,6 @@
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
-// DATABASE_URL is supplied by the operator via the environment.
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./src/db/migrations",
