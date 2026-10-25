@@ -2,27 +2,34 @@
 // assignment boundaries.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { setupSuite } from "./helpers.js";
+import {
+  adminFetch,
+  BASE,
+  startServer,
+  closeServer,
+  resetDb,
+  createFarm,
+  login,
+  provisionUser,
+  superAdminToken,
+} from "./helpers.js";
 
-const t = setupSuite();
-const BASE = t.BASE;
-
-beforeAll(t.beforeAll);
-afterAll(t.afterAll);
-beforeEach(t.beforeEach);
+beforeAll(startServer);
+afterAll(closeServer);
+beforeEach(resetDb);
 
 // Standard fixture: two farms, owners on both, one operator on farm A
 // assigned to its first coop.
 async function seededScenario() {
-  const adminToken = await t.superAdminToken();
-  const farmA = await t.createFarm(adminToken, "Farm A");
-  const farmB = await t.createFarm(adminToken, "Farm B");
-  const ownerA = await t.provisionUser(adminToken, "owner", farmA.id);
-  const operatorA = await t.provisionUser(adminToken, "operator", farmA.id);
-  const ownerB = await t.provisionUser(adminToken, "owner", farmB.id);
+  const adminToken = await superAdminToken();
+  const farmA = await createFarm(adminToken, "Farm A");
+  const farmB = await createFarm(adminToken, "Farm B");
+  const ownerA = await provisionUser(adminToken, "owner", farmA.id);
+  const operatorA = await provisionUser(adminToken, "operator", farmA.id);
+  const ownerB = await provisionUser(adminToken, "owner", farmB.id);
 
-  const ownerAToken = (await t.login(ownerA.username, "password123")).body.token;
-  const ownerBToken = (await t.login(ownerB.username, "password123")).body.token;
+  const ownerAToken = (await login(ownerA.username, "password123")).body.token;
+  const ownerBToken = (await login(ownerB.username, "password123")).body.token;
 
   const coop1 = await (
     await fetch(`${BASE}/api/coops`, {
@@ -44,7 +51,7 @@ async function seededScenario() {
     body: JSON.stringify({ name: "Kandang B1" }),
   });
 
-  await t.adminFetch(ownerAToken, `/api/coops/${coop1.id}/operators`, {
+  await adminFetch(ownerAToken, `/api/coops/${coop1.id}/operators`, {
     method: "PUT",
     body: JSON.stringify({ operatorIds: [operatorA.id] }),
   });
@@ -60,7 +67,7 @@ describe("GET /api/coops (role scoping)", () => {
 
   test("Owner sees all coops of their farm, not other farms", async () => {
     const { ownerA } = await seededScenario();
-    const ownerAToken = (await t.login(ownerA.username, "password123")).body.token;
+    const ownerAToken = (await login(ownerA.username, "password123")).body.token;
     const res = await fetch(`${BASE}/api/coops`, {
       headers: { Authorization: `Bearer ${ownerAToken}` },
     });
@@ -73,7 +80,7 @@ describe("GET /api/coops (role scoping)", () => {
 
   test("Operator sees only coops assigned to them", async () => {
     const { operatorA, coop1 } = await seededScenario();
-    const operatorAToken = (await t.login(operatorA.username, "password123")).body.token;
+    const operatorAToken = (await login(operatorA.username, "password123")).body.token;
     const res = await fetch(`${BASE}/api/coops`, {
       headers: { Authorization: `Bearer ${operatorAToken}` },
     });
@@ -83,7 +90,7 @@ describe("GET /api/coops (role scoping)", () => {
 
   test("Super Admin sees all coops across farms", async () => {
     await seededScenario();
-    const token = await t.superAdminToken();
+    const token = await superAdminToken();
     const res = await fetch(`${BASE}/api/coops`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -95,7 +102,7 @@ describe("GET /api/coops (role scoping)", () => {
 describe("Owner coop management", () => {
   test("Owner cannot manage coops of another farm", async () => {
     const { ownerB, coop1 } = await seededScenario();
-    const ownerBToken = (await t.login(ownerB.username, "password123")).body.token;
+    const ownerBToken = (await login(ownerB.username, "password123")).body.token;
 
     const rename = await fetch(`${BASE}/api/coops/${coop1.id}`, {
       method: "PATCH",
@@ -104,7 +111,7 @@ describe("Owner coop management", () => {
     });
     expect(rename.status).toBe(404);
 
-    const assign = await t.adminFetch(ownerBToken, `/api/coops/${coop1.id}/operators`, {
+    const assign = await adminFetch(ownerBToken, `/api/coops/${coop1.id}/operators`, {
       method: "PUT",
       body: JSON.stringify({ operatorIds: [] }),
     });
@@ -113,7 +120,7 @@ describe("Owner coop management", () => {
 
   test("Operator cannot create or manage coops", async () => {
     const { operatorA } = await seededScenario();
-    const operatorAToken = (await t.login(operatorA.username, "password123")).body.token;
+    const operatorAToken = (await login(operatorA.username, "password123")).body.token;
 
     const create = await fetch(`${BASE}/api/coops`, {
       method: "POST",
@@ -122,7 +129,7 @@ describe("Owner coop management", () => {
     });
     expect(create.status).toBe(403);
 
-    const assign = await t.adminFetch(operatorAToken, "/api/coops/1/operators", {
+    const assign = await adminFetch(operatorAToken, "/api/coops/1/operators", {
       method: "PUT",
       body: JSON.stringify({ operatorIds: [] }),
     });
@@ -130,12 +137,12 @@ describe("Owner coop management", () => {
   });
 
   test("Owner cannot assign an operator from another farm to their coop", async () => {
-    const adminToken = await t.superAdminToken();
+    const adminToken = await superAdminToken();
     const { ownerA, coop1, farmB } = await seededScenario();
-    const operatorB = await t.provisionUser(adminToken, "operator", farmB.id);
+    const operatorB = await provisionUser(adminToken, "operator", farmB.id);
 
-    const ownerAToken = (await t.login(ownerA.username, "password123")).body.token;
-    const res = await t.adminFetch(ownerAToken, `/api/coops/${coop1.id}/operators`, {
+    const ownerAToken = (await login(ownerA.username, "password123")).body.token;
+    const res = await adminFetch(ownerAToken, `/api/coops/${coop1.id}/operators`, {
       method: "PUT",
       body: JSON.stringify({ operatorIds: [operatorB.id] }),
     });
@@ -143,7 +150,7 @@ describe("Owner coop management", () => {
   });
 
   test("Super Admin has no farm, so cannot create a coop", async () => {
-    const token = await t.superAdminToken();
+    const token = await superAdminToken();
     const res = await fetch(`${BASE}/api/coops`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
