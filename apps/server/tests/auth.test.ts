@@ -1,12 +1,9 @@
 // Auth endpoints: login, session identity, and password change.
 
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { config } from "../src/config.js";
 import { setupSuite } from "./helpers.js";
 
 const t = setupSuite();
-const SA_USER = config.superAdminUsername;
-const SA_PASS = config.superAdminPassword;
 
 beforeAll(t.beforeAll);
 afterAll(t.afterAll);
@@ -14,19 +11,19 @@ beforeEach(t.beforeEach);
 
 describe("POST /api/auth/login", () => {
   test("logs in the Super Admin and returns token + user", async () => {
-    const { res, body } = await t.login(SA_USER, SA_PASS);
+    const { res, body } = await t.login(t.SA_USER, t.SA_PASS);
     expect(res.status).toBe(200);
     expect(body.token).toBeString();
     expect(body.user.role).toBe("super_admin");
   });
 
   test("rejects a wrong password", async () => {
-    const { res } = await t.login(SA_USER, "wrongpass");
+    const { res } = await t.login(t.SA_USER, "wrongpass");
     expect(res.status).toBe(401);
   });
 
   test("rejects an unknown username", async () => {
-    const { res } = await t.login("nobody", SA_PASS);
+    const { res } = await t.login("nobody", t.SA_PASS);
     expect(res.status).toBe(401);
   });
 

@@ -1,8 +1,3 @@
-// Shared test harness for endpoint tests.
-// Each suite gets its own app instance and DB connection, bound to PORT from
-// the environment, with a truncated database and a fresh Super Admin before
-// every test. Bun runs test files sequentially, so suites can share the port.
-
 import type { Server } from "node:http";
 import postgres from "postgres";
 import { createApp } from "../src/app.js";
@@ -22,9 +17,13 @@ export interface FarmRow {
 
 export function setupSuite() {
   const BASE = `http://localhost:${config.port}`;
+  const SA_USER = config.superAdminUsername;
+  const SA_PASS = config.superAdminPassword;
+
   const sql = postgres(config.databaseUrl, { max: 1 });
   let server: Server | undefined;
   let seq = 0;
+
 
   async function beforeAll() {
     server = createApp().listen(config.port);
@@ -35,12 +34,10 @@ export function setupSuite() {
     await sql.end();
   }
 
-  // Truncate everything, then insert the Super Admin from the environment,
-  // so suites log in with the same credentials the operator configured.
   async function beforeEach() {
     await sql`TRUNCATE coop_assignments, coops, users, farms RESTART IDENTITY CASCADE`;
     await sql`INSERT INTO users (username, password_hash, role)
-              VALUES (${config.superAdminUsername}, ${await Bun.password.hash(config.superAdminPassword)}, 'super_admin')`;
+              VALUES (${SA_USER}, ${await Bun.password.hash(SA_PASS)}, 'super_admin')`;
     seq = 0;
   }
 
@@ -55,7 +52,7 @@ export function setupSuite() {
   }
 
   async function superAdminToken(): Promise<string> {
-    const { body } = await login(config.superAdminUsername, config.superAdminPassword);
+    const { body } = await login(SA_USER, SA_PASS);
     return body.token;
   }
 
@@ -112,5 +109,7 @@ export function setupSuite() {
     provisionUser,
     createFarm,
     BASE,
+    SA_USER,
+    SA_PASS,
   };
 }
