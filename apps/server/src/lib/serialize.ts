@@ -5,12 +5,12 @@ type UserRow = typeof usersTable.$inferSelect;
 type FarmRow = typeof farmsTable.$inferSelect;
 
 export function toAuthUser(user: UserRow, farm?: FarmRow): AuthUser {
-  return {
-    id: user.id,
-    username: user.username,
-    role: user.role,
-    farmId: user.farmId,
-    farmName: farm?.name ?? null,
-    isActive: user.isActive,
-  };
+    return {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        farmId: user.farmId,
+        farmName: farm?.name ?? null,
+        isActive: user.isActive,
+    };
 }

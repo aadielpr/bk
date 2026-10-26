@@ -4,5 +4,5 @@ import { createApp } from "./app.js";
 const app = createApp();
 
 app.listen(config.port, () => {
-  console.log(`server listening on http://localhost:${config.port}`);
+    console.log(`server listening on http://localhost:${config.port}`);
 });
