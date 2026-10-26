@@ -1,0 +1,11 @@
+{
+    "name": "@bk/shared",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "valibot": "^1.1.0"
+    },
+    "exports": {
+        ".": "./src/index.ts"
+    }
+}
