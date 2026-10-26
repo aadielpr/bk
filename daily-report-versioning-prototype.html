@@ -1,364 +1,851 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Daily Report versioning · prototype</title>
-  <style>
-    :root {
-      color-scheme: light;
-      --ink: #24362f;
-      --muted: #68766f;
-      --line: #dce4de;
-      --paper: #fff;
-      --wash: #f3f6f3;
-      --accent: #34745e;
-      --accent-soft: #e8f2ec;
-      --amber: #8b621d;
-      --amber-soft: #faf2df;
-      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; color: var(--ink); background: var(--wash); }
-    main { max-width: 1180px; margin: 0 auto; padding: 42px 24px 72px; }
-    h1, h2, h3, p { margin-top: 0; }
-    h1 { margin-bottom: 8px; font-size: clamp(28px, 4vw, 40px); line-height: 1.12; letter-spacing: -.035em; }
-    h2 { margin-bottom: 6px; font-size: 20px; letter-spacing: -.02em; }
-    h3 { margin-bottom: 6px; font-size: 16px; }
-    p { color: var(--muted); }
-    .eyebrow { margin-bottom: 10px; color: var(--accent); font-size: 12px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; }
-    .intro { max-width: 790px; margin-bottom: 25px; }
-    .note { border-left: 3px solid #d0a34c; padding: 11px 14px; background: var(--amber-soft); color: #624b20; font-size: 13px; }
-    .panel { margin-top: 18px; padding: 22px; border: 1px solid var(--line); border-radius: 13px; background: var(--paper); box-shadow: 0 2px 8px #18362608; }
-    .section-head { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
-    .section-head p { margin-bottom: 0; font-size: 13px; }
-    .context { display: flex; flex-wrap: wrap; align-items: end; gap: 18px; margin-top: 18px; }
-    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 650; }
-    select { min-width: 160px; border: 1px solid var(--line); border-radius: 7px; background: white; padding: 8px 10px; color: var(--ink); font: inherit; }
-    .cycle-status { display: inline-flex; align-items: center; gap: 7px; margin-bottom: 2px; padding: 7px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 12px; font-weight: 700; }
-    .cycle-status.closed { background: var(--amber-soft); color: var(--amber); }
-    .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    .callout { margin: 0; max-width: 400px; color: var(--muted); font-size: 12px; }
-    .report-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-    .datum { min-height: 74px; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: #fcfdfc; }
-    .datum span { display: block; color: var(--muted); font-size: 11px; font-weight: 650; }
-    .datum strong { display: block; margin-top: 4px; font-size: 17px; font-weight: 650; overflow-wrap: anywhere; }
-    .entries { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
-    .entry-box { padding: 14px; border: 1px solid var(--line); border-radius: 9px; }
-    .entry-box h3 { display: flex; justify-content: space-between; gap: 12px; }
-    .entry-box h3 span { color: var(--muted); font-size: 11px; font-weight: 500; }
-    .entry-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-    .entry-list li { display: flex; justify-content: space-between; gap: 12px; padding-top: 7px; border-top: 1px solid #edf0ed; font-size: 13px; }
-    .entry-list li span:first-child { color: var(--muted); }
-    .empty { color: #88948d !important; font-style: italic; }
-    .change-line { min-height: 22px; margin: 13px 0 0; color: var(--accent); font-size: 13px; font-weight: 650; }
-    .play-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 20px; }
-    .action-group + .action-group { margin-top: 17px; }
-    .action-group h3 { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
-    .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-    button { border: 1px solid var(--line); border-radius: 7px; background: white; padding: 9px 12px; color: var(--ink); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
-    button:hover { border-color: #9ab8a8; background: #f8fbf8; }
-    button:focus-visible, select:focus-visible { outline: 3px solid #91bea8; outline-offset: 2px; }
-    button.primary { border-color: var(--accent); background: var(--accent); color: white; }
-    button.primary:hover { background: #285e4c; }
-    .walkthrough { border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
-    .tabs { display: flex; gap: 2px; padding: 6px; background: #f4f7f4; }
-    .tabs button { flex: 1; border-color: transparent; background: transparent; padding: 8px; color: var(--muted); }
-    .tabs button[aria-selected="true"] { border-color: var(--line); background: white; color: var(--ink); }
-    .walk-content { padding: 16px; }
-    .walk-content p { margin-bottom: 14px; font-size: 13px; }
-    .walk-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .walk-foot span { color: var(--muted); font-size: 12px; }
-    .models { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .model { min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 10px; background: white; }
-    .model h3 { margin-bottom: 3px; font-size: 17px; }
-    .model-intro { min-height: 42px; margin-bottom: 12px; font-size: 12px; }
-    .count { margin-bottom: 12px; color: var(--accent); font-size: 12px; font-weight: 700; }
-    .history-list { display: grid; gap: 9px; max-height: 620px; overflow: auto; }
-    .history-card { padding: 11px; border: 1px solid #e7ece8; border-radius: 8px; background: #fcfdfc; }
-    .history-card header { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; font-size: 12px; font-weight: 750; }
-    .history-card header span:last-child { color: var(--muted); font-weight: 500; }
-    .history-card p { margin: 3px 0 0; color: #42544a; font-size: 12px; overflow-wrap: anywhere; }
-    .history-card details { margin-top: 7px; color: var(--muted); font-size: 12px; }
-    .history-card summary { cursor: pointer; }
-    .history-card .snapshot { margin-top: 7px; padding-top: 6px; border-top: 1px solid #e7ece8; }
-    .model-empty { padding: 18px 12px; color: var(--muted); font-size: 13px; }
-    .history-title { margin: 24px 0 10px; }
-    footer { margin-top: 18px; color: var(--muted); font-size: 12px; }
-    @media (max-width: 820px) {
-      .play-layout { grid-template-columns: 1fr; }
-      .models { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 560px) {
-      main { padding: 26px 14px 48px; }
-      .panel { padding: 16px; }
-      .report-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .entries { grid-template-columns: 1fr; }
-      .tabs { flex-direction: column; }
-      .section-head { display: block; }
-      .callout { margin-top: 8px; }
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <header class="intro">
-      <div class="eyebrow">Daily Report · logic prototype</div>
-      <h1>What counts as a new version?</h1>
-      <p>This demo applies the same submitted corrections to two Daily Report models. Compare whether each correction saves a full report snapshot or versions only the field or activity entry that changed.</p>
-      <p class="note"><strong>Prototype assumption:</strong> the report begins as a prepared draft. Draft changes before the first submission are not modeled because their version rule is still open. This demo uses in-memory state only; roles are shown as context, not enforced as permissions.</p>
-      <div class="context">
-        <label>Who is making the correction
-          <select id="actor-select" aria-label="Who is making the correction">
-            <option>Owner</option>
-            <option>Super Admin</option>
-          </select>
-        </label>
-        <span id="cycle-status" class="cycle-status"><span class="dot"></span>Production Cycle open</span>
-        <p class="callout">After cycle closure, an Owner or Super Admin can still correct the report. Closing the cycle does not itself create a report version.</p>
-      </div>
-    </header>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Daily Report versioning · prototype</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --ink: #24362f;
+                --muted: #68766f;
+                --line: #dce4de;
+                --paper: #fff;
+                --wash: #f3f6f3;
+                --accent: #34745e;
+                --accent-soft: #e8f2ec;
+                --amber: #8b621d;
+                --amber-soft: #faf2df;
+                font:
+                    15px/1.5 -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                color: var(--ink);
+                background: var(--wash);
+            }
+            main {
+                max-width: 1180px;
+                margin: 0 auto;
+                padding: 42px 24px 72px;
+            }
+            h1,
+            h2,
+            h3,
+            p {
+                margin-top: 0;
+            }
+            h1 {
+                margin-bottom: 8px;
+                font-size: clamp(28px, 4vw, 40px);
+                line-height: 1.12;
+                letter-spacing: -0.035em;
+            }
+            h2 {
+                margin-bottom: 6px;
+                font-size: 20px;
+                letter-spacing: -0.02em;
+            }
+            h3 {
+                margin-bottom: 6px;
+                font-size: 16px;
+            }
+            p {
+                color: var(--muted);
+            }
+            .eyebrow {
+                margin-bottom: 10px;
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 750;
+                letter-spacing: 0.11em;
+                text-transform: uppercase;
+            }
+            .intro {
+                max-width: 790px;
+                margin-bottom: 25px;
+            }
+            .note {
+                border-left: 3px solid #d0a34c;
+                padding: 11px 14px;
+                background: var(--amber-soft);
+                color: #624b20;
+                font-size: 13px;
+            }
+            .panel {
+                margin-top: 18px;
+                padding: 22px;
+                border: 1px solid var(--line);
+                border-radius: 13px;
+                background: var(--paper);
+                box-shadow: 0 2px 8px #18362608;
+            }
+            .section-head {
+                display: flex;
+                align-items: start;
+                justify-content: space-between;
+                gap: 18px;
+                margin-bottom: 16px;
+            }
+            .section-head p {
+                margin-bottom: 0;
+                font-size: 13px;
+            }
+            .context {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: end;
+                gap: 18px;
+                margin-top: 18px;
+            }
+            label {
+                display: grid;
+                gap: 5px;
+                color: var(--muted);
+                font-size: 12px;
+                font-weight: 650;
+            }
+            select {
+                min-width: 160px;
+                border: 1px solid var(--line);
+                border-radius: 7px;
+                background: white;
+                padding: 8px 10px;
+                color: var(--ink);
+                font: inherit;
+            }
+            .cycle-status {
+                display: inline-flex;
+                align-items: center;
+                gap: 7px;
+                margin-bottom: 2px;
+                padding: 7px 10px;
+                border-radius: 999px;
+                background: var(--accent-soft);
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .cycle-status.closed {
+                background: var(--amber-soft);
+                color: var(--amber);
+            }
+            .dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: currentColor;
+            }
+            .callout {
+                margin: 0;
+                max-width: 400px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .report-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+            .datum {
+                min-height: 74px;
+                padding: 12px;
+                border: 1px solid var(--line);
+                border-radius: 9px;
+                background: #fcfdfc;
+            }
+            .datum span {
+                display: block;
+                color: var(--muted);
+                font-size: 11px;
+                font-weight: 650;
+            }
+            .datum strong {
+                display: block;
+                margin-top: 4px;
+                font-size: 17px;
+                font-weight: 650;
+                overflow-wrap: anywhere;
+            }
+            .entries {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                margin-top: 16px;
+            }
+            .entry-box {
+                padding: 14px;
+                border: 1px solid var(--line);
+                border-radius: 9px;
+            }
+            .entry-box h3 {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .entry-box h3 span {
+                color: var(--muted);
+                font-size: 11px;
+                font-weight: 500;
+            }
+            .entry-list {
+                display: grid;
+                gap: 7px;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .entry-list li {
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                padding-top: 7px;
+                border-top: 1px solid #edf0ed;
+                font-size: 13px;
+            }
+            .entry-list li span:first-child {
+                color: var(--muted);
+            }
+            .empty {
+                color: #88948d !important;
+                font-style: italic;
+            }
+            .change-line {
+                min-height: 22px;
+                margin: 13px 0 0;
+                color: var(--accent);
+                font-size: 13px;
+                font-weight: 650;
+            }
+            .play-layout {
+                display: grid;
+                grid-template-columns: 0.85fr 1.15fr;
+                gap: 20px;
+            }
+            .action-group + .action-group {
+                margin-top: 17px;
+            }
+            .action-group h3 {
+                color: var(--muted);
+                font-size: 12px;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+            }
+            .buttons {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            button {
+                border: 1px solid var(--line);
+                border-radius: 7px;
+                background: white;
+                padding: 9px 12px;
+                color: var(--ink);
+                font: inherit;
+                font-size: 13px;
+                font-weight: 650;
+                cursor: pointer;
+            }
+            button:hover {
+                border-color: #9ab8a8;
+                background: #f8fbf8;
+            }
+            button:focus-visible,
+            select:focus-visible {
+                outline: 3px solid #91bea8;
+                outline-offset: 2px;
+            }
+            button.primary {
+                border-color: var(--accent);
+                background: var(--accent);
+                color: white;
+            }
+            button.primary:hover {
+                background: #285e4c;
+            }
+            .walkthrough {
+                border: 1px solid var(--line);
+                border-radius: 9px;
+                overflow: hidden;
+            }
+            .tabs {
+                display: flex;
+                gap: 2px;
+                padding: 6px;
+                background: #f4f7f4;
+            }
+            .tabs button {
+                flex: 1;
+                border-color: transparent;
+                background: transparent;
+                padding: 8px;
+                color: var(--muted);
+            }
+            .tabs button[aria-selected="true"] {
+                border-color: var(--line);
+                background: white;
+                color: var(--ink);
+            }
+            .walk-content {
+                padding: 16px;
+            }
+            .walk-content p {
+                margin-bottom: 14px;
+                font-size: 13px;
+            }
+            .walk-foot {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .walk-foot span {
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .models {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+            }
+            .model {
+                min-width: 0;
+                padding: 17px;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                background: white;
+            }
+            .model h3 {
+                margin-bottom: 3px;
+                font-size: 17px;
+            }
+            .model-intro {
+                min-height: 42px;
+                margin-bottom: 12px;
+                font-size: 12px;
+            }
+            .count {
+                margin-bottom: 12px;
+                color: var(--accent);
+                font-size: 12px;
+                font-weight: 700;
+            }
+            .history-list {
+                display: grid;
+                gap: 9px;
+                max-height: 620px;
+                overflow: auto;
+            }
+            .history-card {
+                padding: 11px;
+                border: 1px solid #e7ece8;
+                border-radius: 8px;
+                background: #fcfdfc;
+            }
+            .history-card header {
+                display: flex;
+                justify-content: space-between;
+                gap: 10px;
+                margin-bottom: 6px;
+                font-size: 12px;
+                font-weight: 750;
+            }
+            .history-card header span:last-child {
+                color: var(--muted);
+                font-weight: 500;
+            }
+            .history-card p {
+                margin: 3px 0 0;
+                color: #42544a;
+                font-size: 12px;
+                overflow-wrap: anywhere;
+            }
+            .history-card details {
+                margin-top: 7px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            .history-card summary {
+                cursor: pointer;
+            }
+            .history-card .snapshot {
+                margin-top: 7px;
+                padding-top: 6px;
+                border-top: 1px solid #e7ece8;
+            }
+            .model-empty {
+                padding: 18px 12px;
+                color: var(--muted);
+                font-size: 13px;
+            }
+            .history-title {
+                margin: 24px 0 10px;
+            }
+            footer {
+                margin-top: 18px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+            @media (max-width: 820px) {
+                .play-layout {
+                    grid-template-columns: 1fr;
+                }
+                .models {
+                    grid-template-columns: 1fr;
+                }
+            }
+            @media (max-width: 560px) {
+                main {
+                    padding: 26px 14px 48px;
+                }
+                .panel {
+                    padding: 16px;
+                }
+                .report-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+                .entries {
+                    grid-template-columns: 1fr;
+                }
+                .tabs {
+                    flex-direction: column;
+                }
+                .section-head {
+                    display: block;
+                }
+                .callout {
+                    margin-top: 8px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <header class="intro">
+                <div class="eyebrow">Daily Report · logic prototype</div>
+                <h1>What counts as a new version?</h1>
+                <p>
+                    This demo applies the same submitted corrections to two Daily Report models.
+                    Compare whether each correction saves a full report snapshot or versions only
+                    the field or activity entry that changed.
+                </p>
+                <p class="note">
+                    <strong>Prototype assumption:</strong> the report begins as a prepared draft.
+                    Draft changes before the first submission are not modeled because their version
+                    rule is still open. This demo uses in-memory state only; roles are shown as
+                    context, not enforced as permissions.
+                </p>
+                <div class="context">
+                    <label
+                        >Who is making the correction
+                        <select id="actor-select" aria-label="Who is making the correction">
+                            <option>Owner</option>
+                            <option>Super Admin</option>
+                        </select>
+                    </label>
+                    <span id="cycle-status" class="cycle-status"
+                        ><span class="dot"></span>Production Cycle open</span
+                    >
+                    <p class="callout">
+                        After cycle closure, an Owner or Super Admin can still correct the report.
+                        Closing the cycle does not itself create a report version.
+                    </p>
+                </div>
+            </header>
 
-    <section class="panel" aria-labelledby="current-heading">
-      <div class="section-head">
-        <div><h2 id="current-heading">Current Daily Report</h2><p>Both models show the same latest report. Each action below updates this view and both histories.</p></div>
-        <span id="submission-status" class="cycle-status"><span class="dot"></span>Not submitted</span>
-      </div>
-      <div id="current-report"></div>
-      <p id="last-change" class="change-line" aria-live="polite">Ready. Submit this report to start comparing version histories.</p>
-    </section>
+            <section class="panel" aria-labelledby="current-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 id="current-heading">Current Daily Report</h2>
+                        <p>
+                            Both models show the same latest report. Each action below updates this
+                            view and both histories.
+                        </p>
+                    </div>
+                    <span id="submission-status" class="cycle-status"
+                        ><span class="dot"></span>Not submitted</span
+                    >
+                </div>
+                <div id="current-report"></div>
+                <p id="last-change" class="change-line" aria-live="polite">
+                    Ready. Submit this report to start comparing version histories.
+                </p>
+            </section>
 
-    <section class="panel" aria-labelledby="explore-heading">
-      <div class="section-head"><div><h2 id="explore-heading">Explore the models</h2><p>Use free play for any sequence, or follow a guided walkthrough.</p></div></div>
-      <div class="play-layout">
-        <div>
-          <div class="action-group">
-            <h3>Report</h3>
-            <div class="buttons">
-              <button class="primary" data-action="submit">Submit prepared report</button>
-              <button data-action="correctMortality">Correct mortality (+2 birds)</button>
-              <button data-action="closeCycle">Close Production Cycle</button>
-            </div>
-          </div>
-          <div class="action-group">
-            <h3>Activity entries</h3>
-            <div class="buttons">
-              <button data-action="addDelivery">Add feed delivery</button>
-              <button data-action="correctDelivery">Correct first feed delivery (+4 bags)</button>
-              <button data-action="addHarvest">Add harvest / DO entry</button>
-              <button data-action="correctHarvest">Correct first harvest (+10 birds)</button>
-            </div>
-          </div>
-        </div>
-        <div class="walkthrough">
-          <div class="tabs" role="tablist" aria-label="Guided walkthroughs">
-            <button role="tab" id="tab-mortality" aria-selected="true" aria-controls="walk-panel" data-walk="mortality">Mortality correction</button>
-            <button role="tab" id="tab-entries" aria-selected="false" aria-controls="walk-panel" data-walk="entries">Activity entries</button>
-            <button role="tab" id="tab-closed" aria-selected="false" aria-controls="walk-panel" data-walk="closed">After cycle closure</button>
-          </div>
-          <div class="walk-content" id="walk-panel" role="tabpanel" aria-labelledby="tab-mortality">
-            <h3 id="walk-title"></h3>
-            <p id="walk-description"></p>
-            <div class="walk-foot"><span id="walk-step"></span><button class="primary" id="walk-next"></button></div>
-          </div>
-        </div>
-      </div>
-    </section>
+            <section class="panel" aria-labelledby="explore-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 id="explore-heading">Explore the models</h2>
+                        <p>Use free play for any sequence, or follow a guided walkthrough.</p>
+                    </div>
+                </div>
+                <div class="play-layout">
+                    <div>
+                        <div class="action-group">
+                            <h3>Report</h3>
+                            <div class="buttons">
+                                <button class="primary" data-action="submit">
+                                    Submit prepared report
+                                </button>
+                                <button data-action="correctMortality">
+                                    Correct mortality (+2 birds)
+                                </button>
+                                <button data-action="closeCycle">Close Production Cycle</button>
+                            </div>
+                        </div>
+                        <div class="action-group">
+                            <h3>Activity entries</h3>
+                            <div class="buttons">
+                                <button data-action="addDelivery">Add feed delivery</button>
+                                <button data-action="correctDelivery">
+                                    Correct first feed delivery (+4 bags)
+                                </button>
+                                <button data-action="addHarvest">Add harvest / DO entry</button>
+                                <button data-action="correctHarvest">
+                                    Correct first harvest (+10 birds)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="walkthrough">
+                        <div class="tabs" role="tablist" aria-label="Guided walkthroughs">
+                            <button
+                                role="tab"
+                                id="tab-mortality"
+                                aria-selected="true"
+                                aria-controls="walk-panel"
+                                data-walk="mortality"
+                            >
+                                Mortality correction
+                            </button>
+                            <button
+                                role="tab"
+                                id="tab-entries"
+                                aria-selected="false"
+                                aria-controls="walk-panel"
+                                data-walk="entries"
+                            >
+                                Activity entries
+                            </button>
+                            <button
+                                role="tab"
+                                id="tab-closed"
+                                aria-selected="false"
+                                aria-controls="walk-panel"
+                                data-walk="closed"
+                            >
+                                After cycle closure
+                            </button>
+                        </div>
+                        <div
+                            class="walk-content"
+                            id="walk-panel"
+                            role="tabpanel"
+                            aria-labelledby="tab-mortality"
+                        >
+                            <h3 id="walk-title"></h3>
+                            <p id="walk-description"></p>
+                            <div class="walk-foot">
+                                <span id="walk-step"></span
+                                ><button class="primary" id="walk-next"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-    <section aria-labelledby="history-heading">
-      <div class="section-head history-title"><div><h2 id="history-heading">Version history comparison</h2><p>Open a report snapshot or scan the independent histories to see exactly what each model records.</p></div></div>
-      <div class="models">
-        <article class="model" aria-labelledby="whole-title">
-          <h3 id="whole-title">Whole report per submission</h3>
-          <p class="model-intro">Every submitted correction creates a new version containing all routine fields and activity entries as they stood at that moment.</p>
-          <div id="whole-history" class="history-list"></div>
-        </article>
-        <article class="model" aria-labelledby="granular-title">
-          <h3 id="granular-title">Changed field or entry only</h3>
-          <p class="model-intro">The first submission establishes the report. Later corrections add history only to the changed field or activity entry; the current report combines their latest values.</p>
-          <div id="granular-history" class="history-list"></div>
-        </article>
-      </div>
-    </section>
-    <footer>Prototype only · refresh the page to clear the in-memory history.</footer>
-  </main>
+            <section aria-labelledby="history-heading">
+                <div class="section-head history-title">
+                    <div>
+                        <h2 id="history-heading">Version history comparison</h2>
+                        <p>
+                            Open a report snapshot or scan the independent histories to see exactly
+                            what each model records.
+                        </p>
+                    </div>
+                </div>
+                <div class="models">
+                    <article class="model" aria-labelledby="whole-title">
+                        <h3 id="whole-title">Whole report per submission</h3>
+                        <p class="model-intro">
+                            Every submitted correction creates a new version containing all routine
+                            fields and activity entries as they stood at that moment.
+                        </p>
+                        <div id="whole-history" class="history-list"></div>
+                    </article>
+                    <article class="model" aria-labelledby="granular-title">
+                        <h3 id="granular-title">Changed field or entry only</h3>
+                        <p class="model-intro">
+                            The first submission establishes the report. Later corrections add
+                            history only to the changed field or activity entry; the current report
+                            combines their latest values.
+                        </p>
+                        <div id="granular-history" class="history-list"></div>
+                    </article>
+                </div>
+            </section>
+            <footer>Prototype only · refresh the page to clear the in-memory history.</footer>
+        </main>
 
-  <script>
-    // Portable logic module: plain state and actions only; no DOM access.
-    const DailyReportVersioning = (() => {
-      const copy = value => JSON.parse(JSON.stringify(value));
+        <script>
+            // Portable logic module: plain state and actions only; no DOM access.
+            const DailyReportVersioning = (() => {
+                const copy = (value) => JSON.parse(JSON.stringify(value));
 
-      function initialState() {
-        return {
-          date: "2026-10-10",
-          coop: "F00",
-          cycle: "open",
-          actor: "Owner",
-          submitted: false,
-          report: {
-            mortality: 3,
-            sorting: 1,
-            feedUsed: { "SB-10 AC": 42, "SB-11 AC": 18 },
-            note: "Flock active; routine checks complete.",
-            sampleWeight: 1.24,
-            deliveries: [],
-            harvests: []
-          },
-          models: { whole: [], fieldHistories: {} },
-          deliveryCount: 0,
-          harvestCount: 0,
-          lastChange: "Ready. Submit this report to start comparing version histories."
-        };
-      }
+                function initialState() {
+                    return {
+                        date: "2026-10-10",
+                        coop: "F00",
+                        cycle: "open",
+                        actor: "Owner",
+                        submitted: false,
+                        report: {
+                            mortality: 3,
+                            sorting: 1,
+                            feedUsed: { "SB-10 AC": 42, "SB-11 AC": 18 },
+                            note: "Flock active; routine checks complete.",
+                            sampleWeight: 1.24,
+                            deliveries: [],
+                            harvests: [],
+                        },
+                        models: { whole: [], fieldHistories: {} },
+                        deliveryCount: 0,
+                        harvestCount: 0,
+                        lastChange:
+                            "Ready. Submit this report to start comparing version histories.",
+                    };
+                }
 
-      function snapshot(report) { return copy(report); }
-      function describe(action) {
-        return ({
-          submit: "First submission",
-          correctMortality: "Corrected mortality",
-          addDelivery: "Added feed delivery",
-          correctDelivery: "Corrected feed delivery D1",
-          addHarvest: "Added harvest / DO entry",
-          correctHarvest: "Corrected harvest H1",
-          closeCycle: "Closed Production Cycle"
-        })[action.type] || "Updated Daily Report";
-      }
-      function pushEvent(state, key, value, label, source) {
-        const histories = state.models.fieldHistories;
-        histories[key] ||= [];
-        histories[key].push({ number: histories[key].length + 1, value: copy(value), label, source });
-      }
-      function establishGranularBaseline(state, label) {
-        const report = state.report;
-        for (const key of ["mortality", "sorting", "note", "sampleWeight"]) pushEvent(state, key, report[key], label, "Initial report");
-        for (const [feedType, bags] of Object.entries(report.feedUsed)) pushEvent(state, `Feed used · ${feedType}`, bags, label, "Initial report");
-        for (const entry of report.deliveries) pushEvent(state, `Feed delivery · ${entry.id}`, entry, label, "Initial report");
-        for (const entry of report.harvests) pushEvent(state, `Harvest / DO · ${entry.id}`, entry, label, "Initial report");
-      }
-      function recordSubmittedChange(state, action) {
-        const label = describe(action);
-        const whole = state.models.whole;
-        whole.push({ number: whole.length + 1, label, actor: state.actor, snapshot: snapshot(state.report) });
-        const changed = action.changed;
-        if (changed) pushEvent(state, changed.key, changed.value, label, state.actor);
-        state.lastChange = `${label} submitted by ${state.actor}. Whole report: version ${whole.length}; changed item: ${changed ? changed.key : "report"}.`;
-      }
-      function reducer(previous, action) {
-        const state = copy(previous);
-        if (action.type === "setActor") {
-          state.actor = action.actor;
-          state.lastChange = `Correction context set to ${state.actor}.`;
-          return state;
-        }
-        if (action.type === "closeCycle") {
-          if (state.cycle === "closed") state.lastChange = "Production Cycle is already closed; no report version was created.";
-          else {
-            state.cycle = "closed";
-            state.lastChange = "Production Cycle closed. No Daily Report fields changed, so neither history gained a version.";
-          }
-          return state;
-        }
-        if (action.type === "submit") {
-          if (state.submitted) {
-            state.lastChange = "This report was already submitted. Use a correction action to create another version.";
-            return state;
-          }
-          state.submitted = true;
-          state.models.whole.push({ number: 1, label: "First submission", actor: state.actor, snapshot: snapshot(state.report) });
-          establishGranularBaseline(state, "First submission");
-          state.lastChange = "First submission recorded. The whole report has version 1; the changed-item model has established its starting values.";
-          return state;
-        }
-        if (!state.submitted) {
-          state.lastChange = "Submit the prepared report first. Draft editing before submission is not modeled in this prototype.";
-          return state;
-        }
+                function snapshot(report) {
+                    return copy(report);
+                }
+                function describe(action) {
+                    return (
+                        {
+                            submit: "First submission",
+                            correctMortality: "Corrected mortality",
+                            addDelivery: "Added feed delivery",
+                            correctDelivery: "Corrected feed delivery D1",
+                            addHarvest: "Added harvest / DO entry",
+                            correctHarvest: "Corrected harvest H1",
+                            closeCycle: "Closed Production Cycle",
+                        }[action.type] || "Updated Daily Report"
+                    );
+                }
+                function pushEvent(state, key, value, label, source) {
+                    const histories = state.models.fieldHistories;
+                    histories[key] ||= [];
+                    histories[key].push({
+                        number: histories[key].length + 1,
+                        value: copy(value),
+                        label,
+                        source,
+                    });
+                }
+                function establishGranularBaseline(state, label) {
+                    const report = state.report;
+                    for (const key of ["mortality", "sorting", "note", "sampleWeight"])
+                        pushEvent(state, key, report[key], label, "Initial report");
+                    for (const [feedType, bags] of Object.entries(report.feedUsed))
+                        pushEvent(state, `Feed used · ${feedType}`, bags, label, "Initial report");
+                    for (const entry of report.deliveries)
+                        pushEvent(
+                            state,
+                            `Feed delivery · ${entry.id}`,
+                            entry,
+                            label,
+                            "Initial report",
+                        );
+                    for (const entry of report.harvests)
+                        pushEvent(
+                            state,
+                            `Harvest / DO · ${entry.id}`,
+                            entry,
+                            label,
+                            "Initial report",
+                        );
+                }
+                function recordSubmittedChange(state, action) {
+                    const label = describe(action);
+                    const whole = state.models.whole;
+                    whole.push({
+                        number: whole.length + 1,
+                        label,
+                        actor: state.actor,
+                        snapshot: snapshot(state.report),
+                    });
+                    const changed = action.changed;
+                    if (changed) pushEvent(state, changed.key, changed.value, label, state.actor);
+                    state.lastChange = `${label} submitted by ${state.actor}. Whole report: version ${whole.length}; changed item: ${changed ? changed.key : "report"}.`;
+                }
+                function reducer(previous, action) {
+                    const state = copy(previous);
+                    if (action.type === "setActor") {
+                        state.actor = action.actor;
+                        state.lastChange = `Correction context set to ${state.actor}.`;
+                        return state;
+                    }
+                    if (action.type === "closeCycle") {
+                        if (state.cycle === "closed")
+                            state.lastChange =
+                                "Production Cycle is already closed; no report version was created.";
+                        else {
+                            state.cycle = "closed";
+                            state.lastChange =
+                                "Production Cycle closed. No Daily Report fields changed, so neither history gained a version.";
+                        }
+                        return state;
+                    }
+                    if (action.type === "submit") {
+                        if (state.submitted) {
+                            state.lastChange =
+                                "This report was already submitted. Use a correction action to create another version.";
+                            return state;
+                        }
+                        state.submitted = true;
+                        state.models.whole.push({
+                            number: 1,
+                            label: "First submission",
+                            actor: state.actor,
+                            snapshot: snapshot(state.report),
+                        });
+                        establishGranularBaseline(state, "First submission");
+                        state.lastChange =
+                            "First submission recorded. The whole report has version 1; the changed-item model has established its starting values.";
+                        return state;
+                    }
+                    if (!state.submitted) {
+                        state.lastChange =
+                            "Submit the prepared report first. Draft editing before submission is not modeled in this prototype.";
+                        return state;
+                    }
 
-        let changed;
-        if (action.type === "correctMortality") {
-          state.report.mortality += 2;
-          changed = { key: "Mortality", value: state.report.mortality };
-        } else if (action.type === "addDelivery") {
-          state.deliveryCount += 1;
-          const entry = { id: `D${state.deliveryCount}`, feedType: state.deliveryCount % 2 ? "SB-11 AC" : "SB-12", bags: state.deliveryCount % 2 ? 20 : 16 };
-          state.report.deliveries.push(entry);
-          changed = { key: `Feed delivery · ${entry.id}`, value: entry };
-        } else if (action.type === "correctDelivery") {
-          const entry = state.report.deliveries.find(item => item.id === "D1");
-          if (!entry) { state.lastChange = "Add a feed delivery before correcting the first one."; return state; }
-          entry.bags += 4;
-          changed = { key: `Feed delivery · ${entry.id}`, value: entry };
-        } else if (action.type === "addHarvest") {
-          state.harvestCount += 1;
-          const entry = { id: `H${state.harvestCount}`, birds: state.harvestCount % 2 ? 240 : 180, kg: state.harvestCount % 2 ? 310 : 228 };
-          state.report.harvests.push(entry);
-          changed = { key: `Harvest / DO · ${entry.id}`, value: entry };
-        } else if (action.type === "correctHarvest") {
-          const entry = state.report.harvests.find(item => item.id === "H1");
-          if (!entry) { state.lastChange = "Add a harvest / DO entry before correcting the first one."; return state; }
-          entry.birds += 10;
-          entry.kg += 13;
-          changed = { key: `Harvest / DO · ${entry.id}`, value: entry };
-        } else {
-          return state;
-        }
-        recordSubmittedChange(state, { ...action, changed });
-        return state;
-      }
-      return { initialState, reducer };
-    })();
+                    let changed;
+                    if (action.type === "correctMortality") {
+                        state.report.mortality += 2;
+                        changed = { key: "Mortality", value: state.report.mortality };
+                    } else if (action.type === "addDelivery") {
+                        state.deliveryCount += 1;
+                        const entry = {
+                            id: `D${state.deliveryCount}`,
+                            feedType: state.deliveryCount % 2 ? "SB-11 AC" : "SB-12",
+                            bags: state.deliveryCount % 2 ? 20 : 16,
+                        };
+                        state.report.deliveries.push(entry);
+                        changed = { key: `Feed delivery · ${entry.id}`, value: entry };
+                    } else if (action.type === "correctDelivery") {
+                        const entry = state.report.deliveries.find((item) => item.id === "D1");
+                        if (!entry) {
+                            state.lastChange =
+                                "Add a feed delivery before correcting the first one.";
+                            return state;
+                        }
+                        entry.bags += 4;
+                        changed = { key: `Feed delivery · ${entry.id}`, value: entry };
+                    } else if (action.type === "addHarvest") {
+                        state.harvestCount += 1;
+                        const entry = {
+                            id: `H${state.harvestCount}`,
+                            birds: state.harvestCount % 2 ? 240 : 180,
+                            kg: state.harvestCount % 2 ? 310 : 228,
+                        };
+                        state.report.harvests.push(entry);
+                        changed = { key: `Harvest / DO · ${entry.id}`, value: entry };
+                    } else if (action.type === "correctHarvest") {
+                        const entry = state.report.harvests.find((item) => item.id === "H1");
+                        if (!entry) {
+                            state.lastChange =
+                                "Add a harvest / DO entry before correcting the first one.";
+                            return state;
+                        }
+                        entry.birds += 10;
+                        entry.kg += 13;
+                        changed = { key: `Harvest / DO · ${entry.id}`, value: entry };
+                    } else {
+                        return state;
+                    }
+                    recordSubmittedChange(state, { ...action, changed });
+                    return state;
+                }
+                return { initialState, reducer };
+            })();
 
-    const walks = {
-      mortality: {
-        title: "Submit, then correct mortality",
-        description: "Watch the whole report history keep every field in each submission. In the other model, the mortality field gets its own short history while the latest report still shows the corrected count.",
-        steps: [{ type: "submit", text: "Submit the prepared report" }, { type: "correctMortality", text: "Correct mortality by 2 birds" }]
-      },
-      entries: {
-        title: "Add several activity entries, then correct one",
-        description: "Add two feed deliveries and two harvest / DO entries. Then correct the first delivery. Compare the new whole-report snapshot with the one delivery entry that receives a new local version.",
-        steps: [
-          { type: "submit", text: "Submit the prepared report" },
-          { type: "addDelivery", text: "Add feed delivery D1" },
-          { type: "addDelivery", text: "Add feed delivery D2" },
-          { type: "addHarvest", text: "Add harvest / DO entry H1" },
-          { type: "addHarvest", text: "Add harvest / DO entry H2" },
-          { type: "correctDelivery", text: "Correct feed delivery D1" }
-        ]
-      },
-      closed: {
-        title: "Correct a report after cycle closure",
-        description: "Close the Production Cycle, then correct mortality as the selected Owner or Super Admin. The correction still enters both histories; cycle closure itself creates no report version.",
-        steps: [
-          { type: "submit", text: "Submit the prepared report" },
-          { type: "closeCycle", text: "Close the Production Cycle" },
-          { type: "correctMortality", text: "Correct mortality after closure" }
-        ]
-      }
-    };
-    let state = DailyReportVersioning.initialState();
-    let activeWalk = "mortality";
-    let walkIndex = 0;
+            const walks = {
+                mortality: {
+                    title: "Submit, then correct mortality",
+                    description:
+                        "Watch the whole report history keep every field in each submission. In the other model, the mortality field gets its own short history while the latest report still shows the corrected count.",
+                    steps: [
+                        { type: "submit", text: "Submit the prepared report" },
+                        { type: "correctMortality", text: "Correct mortality by 2 birds" },
+                    ],
+                },
+                entries: {
+                    title: "Add several activity entries, then correct one",
+                    description:
+                        "Add two feed deliveries and two harvest / DO entries. Then correct the first delivery. Compare the new whole-report snapshot with the one delivery entry that receives a new local version.",
+                    steps: [
+                        { type: "submit", text: "Submit the prepared report" },
+                        { type: "addDelivery", text: "Add feed delivery D1" },
+                        { type: "addDelivery", text: "Add feed delivery D2" },
+                        { type: "addHarvest", text: "Add harvest / DO entry H1" },
+                        { type: "addHarvest", text: "Add harvest / DO entry H2" },
+                        { type: "correctDelivery", text: "Correct feed delivery D1" },
+                    ],
+                },
+                closed: {
+                    title: "Correct a report after cycle closure",
+                    description:
+                        "Close the Production Cycle, then correct mortality as the selected Owner or Super Admin. The correction still enters both histories; cycle closure itself creates no report version.",
+                    steps: [
+                        { type: "submit", text: "Submit the prepared report" },
+                        { type: "closeCycle", text: "Close the Production Cycle" },
+                        { type: "correctMortality", text: "Correct mortality after closure" },
+                    ],
+                },
+            };
+            let state = DailyReportVersioning.initialState();
+            let activeWalk = "mortality";
+            let walkIndex = 0;
 
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
-    }
-    function formatValue(value) {
-      if (value && typeof value === "object") {
-        return Object.entries(value).map(([key, val]) => `${key}: ${val}`).join(" · ");
-      }
-      return String(value);
-    }
-    function valueHtml(value) { return escapeHtml(formatValue(value)); }
-    function renderCurrent() {
-      const report = state.report;
-      document.querySelector("#current-report").innerHTML = `
+            function escapeHtml(value) {
+                return String(value).replace(
+                    /[&<>"']/g,
+                    (char) =>
+                        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+                            char
+                        ],
+                );
+            }
+            function formatValue(value) {
+                if (value && typeof value === "object") {
+                    return Object.entries(value)
+                        .map(([key, val]) => `${key}: ${val}`)
+                        .join(" · ");
+                }
+                return String(value);
+            }
+            function valueHtml(value) {
+                return escapeHtml(formatValue(value));
+            }
+            function renderCurrent() {
+                const report = state.report;
+                document.querySelector("#current-report").innerHTML = `
         <div class="report-grid">
           <div class="datum"><span>Report date · Coop</span><strong>${escapeHtml(state.date)} · ${escapeHtml(state.coop)}</strong></div>
           <div class="datum"><span>Production Cycle</span><strong>${state.cycle === "open" ? "Open" : "Closed"}</strong></div>
           <div class="datum"><span>Mortality</span><strong>${report.mortality} birds</strong></div>
           <div class="datum"><span>Sorting</span><strong>${report.sorting} birds</strong></div>
-          <div class="datum"><span>Feed used</span><strong>${Object.entries(report.feedUsed).map(([type, bags]) => `${escapeHtml(type)} ${bags} bags`).join(" · ")}</strong></div>
+          <div class="datum"><span>Feed used</span><strong>${Object.entries(report.feedUsed)
+              .map(([type, bags]) => `${escapeHtml(type)} ${bags} bags`)
+              .join(" · ")}</strong></div>
           <div class="datum"><span>Sample weight</span><strong>${report.sampleWeight.toFixed(2)} kg average</strong></div>
           <div class="datum" style="grid-column: 1 / -1"><span>Notes</span><strong>${escapeHtml(report.note)}</strong></div>
         </div>
@@ -366,84 +853,133 @@
           ${entryList("Feed deliveries", report.deliveries, "delivery")}
           ${entryList("Harvest / Delivery Order entries", report.harvests, "harvest")}
         </div>`;
-      document.querySelector("#last-change").textContent = state.lastChange;
-      const cycle = document.querySelector("#cycle-status");
-      cycle.classList.toggle("closed", state.cycle === "closed");
-      cycle.innerHTML = `<span class="dot"></span>Production Cycle ${state.cycle}`;
-      const submitted = document.querySelector("#submission-status");
-      submitted.classList.toggle("closed", !state.submitted);
-      submitted.innerHTML = `<span class="dot"></span>${state.submitted ? "Submitted" : "Not submitted"}`;
-    }
-    function entryList(title, entries, kind) {
-      const content = entries.length ? entries.map(item => kind === "delivery"
-        ? `<li><span>${escapeHtml(item.id)} · ${escapeHtml(item.feedType)}</span><strong>${item.bags} bags</strong></li>`
-        : `<li><span>${escapeHtml(item.id)} · ${item.birds} birds</span><strong>${item.kg} kg</strong></li>`).join("")
-        : `<li class="empty">No entries yet</li>`;
-      return `<div class="entry-box"><h3>${title}<span>${entries.length} ${entries.length === 1 ? "entry" : "entries"}</span></h3><ul class="entry-list">${content}</ul></div>`;
-    }
-    function snapshotMarkup(snapshot) {
-      const deliveries = snapshot.deliveries.length ? snapshot.deliveries.map(item => `${item.id}: ${item.feedType}, ${item.bags} bags`).join("; ") : "None";
-      const harvests = snapshot.harvests.length ? snapshot.harvests.map(item => `${item.id}: ${item.birds} birds, ${item.kg} kg`).join("; ") : "None";
-      const feed = Object.entries(snapshot.feedUsed).map(([type, bags]) => `${type} ${bags} bags`).join("; ");
-      return `<div class="snapshot"><p>Mortality: ${snapshot.mortality} birds · Sorting: ${snapshot.sorting} birds</p><p>Feed used: ${escapeHtml(feed)}</p><p>Sample weight: ${snapshot.sampleWeight.toFixed(2)} kg · Notes: ${escapeHtml(snapshot.note)}</p><p>Deliveries: ${escapeHtml(deliveries)}</p><p>Harvest / DO: ${escapeHtml(harvests)}</p></div>`;
-    }
-    function renderHistories() {
-      const whole = state.models.whole;
-      document.querySelector("#whole-history").innerHTML = whole.length
-        ? `<div class="count">${whole.length} ${whole.length === 1 ? "full report version" : "full report versions"}</div>` + [...whole].reverse().map(version => `
+                document.querySelector("#last-change").textContent = state.lastChange;
+                const cycle = document.querySelector("#cycle-status");
+                cycle.classList.toggle("closed", state.cycle === "closed");
+                cycle.innerHTML = `<span class="dot"></span>Production Cycle ${state.cycle}`;
+                const submitted = document.querySelector("#submission-status");
+                submitted.classList.toggle("closed", !state.submitted);
+                submitted.innerHTML = `<span class="dot"></span>${state.submitted ? "Submitted" : "Not submitted"}`;
+            }
+            function entryList(title, entries, kind) {
+                const content = entries.length
+                    ? entries
+                          .map((item) =>
+                              kind === "delivery"
+                                  ? `<li><span>${escapeHtml(item.id)} · ${escapeHtml(item.feedType)}</span><strong>${item.bags} bags</strong></li>`
+                                  : `<li><span>${escapeHtml(item.id)} · ${item.birds} birds</span><strong>${item.kg} kg</strong></li>`,
+                          )
+                          .join("")
+                    : `<li class="empty">No entries yet</li>`;
+                return `<div class="entry-box"><h3>${title}<span>${entries.length} ${entries.length === 1 ? "entry" : "entries"}</span></h3><ul class="entry-list">${content}</ul></div>`;
+            }
+            function snapshotMarkup(snapshot) {
+                const deliveries = snapshot.deliveries.length
+                    ? snapshot.deliveries
+                          .map((item) => `${item.id}: ${item.feedType}, ${item.bags} bags`)
+                          .join("; ")
+                    : "None";
+                const harvests = snapshot.harvests.length
+                    ? snapshot.harvests
+                          .map((item) => `${item.id}: ${item.birds} birds, ${item.kg} kg`)
+                          .join("; ")
+                    : "None";
+                const feed = Object.entries(snapshot.feedUsed)
+                    .map(([type, bags]) => `${type} ${bags} bags`)
+                    .join("; ");
+                return `<div class="snapshot"><p>Mortality: ${snapshot.mortality} birds · Sorting: ${snapshot.sorting} birds</p><p>Feed used: ${escapeHtml(feed)}</p><p>Sample weight: ${snapshot.sampleWeight.toFixed(2)} kg · Notes: ${escapeHtml(snapshot.note)}</p><p>Deliveries: ${escapeHtml(deliveries)}</p><p>Harvest / DO: ${escapeHtml(harvests)}</p></div>`;
+            }
+            function renderHistories() {
+                const whole = state.models.whole;
+                document.querySelector("#whole-history").innerHTML = whole.length
+                    ? `<div class="count">${whole.length} ${whole.length === 1 ? "full report version" : "full report versions"}</div>` +
+                      [...whole]
+                          .reverse()
+                          .map(
+                              (version) => `
           <article class="history-card"><header><span>Report version ${version.number} · ${escapeHtml(version.label)}</span><span>${escapeHtml(version.actor)}</span></header>
             <details><summary>View full report snapshot</summary>${snapshotMarkup(version.snapshot)}</details>
-          </article>`).join("")
-        : `<div class="model-empty">No submitted versions yet. Submit the report to start.</div>`;
+          </article>`,
+                          )
+                          .join("")
+                    : `<div class="model-empty">No submitted versions yet. Submit the report to start.</div>`;
 
-      const histories = state.models.fieldHistories;
-      document.querySelector("#granular-history").innerHTML = state.submitted
-        ? `<div class="count">${Object.keys(histories).length} separately tracked fields and entries · current report uses each latest value</div>` + Object.entries(histories).map(([key, versions]) => `
+                const histories = state.models.fieldHistories;
+                document.querySelector("#granular-history").innerHTML = state.submitted
+                    ? `<div class="count">${Object.keys(histories).length} separately tracked fields and entries · current report uses each latest value</div>` +
+                      Object.entries(histories)
+                          .map(
+                              ([key, versions]) => `
           <article class="history-card"><header><span>${escapeHtml(key)}</span><span>${versions.length} ${versions.length === 1 ? "version" : "versions"}</span></header>
-            ${versions.map(version => `<p>v${version.number} · ${escapeHtml(version.label)}${version.source !== "Initial report" ? ` · ${escapeHtml(version.source)}` : ""}: ${valueHtml(version.value)}</p>`).join("")}
-          </article>`).join("")
-        : `<div class="model-empty">No submitted values yet. Submit the report to establish its starting values.</div>`;
-    }
-    function renderWalk() {
-      const walk = walks[activeWalk];
-      const step = walk.steps[walkIndex];
-      document.querySelectorAll("[data-walk]").forEach(tab => {
-        const selected = tab.dataset.walk === activeWalk;
-        tab.setAttribute("aria-selected", String(selected));
-        tab.tabIndex = selected ? 0 : -1;
-      });
-      document.querySelector("#walk-panel").setAttribute("aria-labelledby", `tab-${activeWalk}`);
-      document.querySelector("#walk-title").textContent = walk.title;
-      document.querySelector("#walk-description").textContent = walk.description;
-      document.querySelector("#walk-step").textContent = step ? `Step ${walkIndex + 1} of ${walk.steps.length}` : "Walkthrough complete";
-      const button = document.querySelector("#walk-next");
-      button.textContent = step ? step.text : "Restart walkthrough";
-      button.dataset.finished = String(!step);
-    }
-    function render() { renderCurrent(); renderHistories(); renderWalk(); }
-    function dispatch(action) {
-      state = DailyReportVersioning.reducer(state, action);
-      render();
-    }
-    function startWalk(id) {
-      activeWalk = id;
-      state = DailyReportVersioning.initialState();
-      state.actor = document.querySelector("#actor-select").value;
-      walkIndex = 0;
-      render();
-    }
+            ${versions.map((version) => `<p>v${version.number} · ${escapeHtml(version.label)}${version.source !== "Initial report" ? ` · ${escapeHtml(version.source)}` : ""}: ${valueHtml(version.value)}</p>`).join("")}
+          </article>`,
+                          )
+                          .join("")
+                    : `<div class="model-empty">No submitted values yet. Submit the report to establish its starting values.</div>`;
+            }
+            function renderWalk() {
+                const walk = walks[activeWalk];
+                const step = walk.steps[walkIndex];
+                document.querySelectorAll("[data-walk]").forEach((tab) => {
+                    const selected = tab.dataset.walk === activeWalk;
+                    tab.setAttribute("aria-selected", String(selected));
+                    tab.tabIndex = selected ? 0 : -1;
+                });
+                document
+                    .querySelector("#walk-panel")
+                    .setAttribute("aria-labelledby", `tab-${activeWalk}`);
+                document.querySelector("#walk-title").textContent = walk.title;
+                document.querySelector("#walk-description").textContent = walk.description;
+                document.querySelector("#walk-step").textContent = step
+                    ? `Step ${walkIndex + 1} of ${walk.steps.length}`
+                    : "Walkthrough complete";
+                const button = document.querySelector("#walk-next");
+                button.textContent = step ? step.text : "Restart walkthrough";
+                button.dataset.finished = String(!step);
+            }
+            function render() {
+                renderCurrent();
+                renderHistories();
+                renderWalk();
+            }
+            function dispatch(action) {
+                state = DailyReportVersioning.reducer(state, action);
+                render();
+            }
+            function startWalk(id) {
+                activeWalk = id;
+                state = DailyReportVersioning.initialState();
+                state.actor = document.querySelector("#actor-select").value;
+                walkIndex = 0;
+                render();
+            }
 
-    document.querySelectorAll("[data-action]").forEach(button => button.addEventListener("click", () => dispatch({ type: button.dataset.action })));
-    document.querySelector("#actor-select").addEventListener("change", event => dispatch({ type: "setActor", actor: event.target.value }));
-    document.querySelectorAll("[data-walk]").forEach(tab => tab.addEventListener("click", () => startWalk(tab.dataset.walk)));
-    document.querySelector("#walk-next").addEventListener("click", event => {
-      const walk = walks[activeWalk];
-      if (event.currentTarget.dataset.finished === "true") { startWalk(activeWalk); return; }
-      dispatch({ type: walk.steps[walkIndex].type });
-      walkIndex += 1;
-      renderWalk();
-    });
-    render();
-  </script>
-</body>
+            document
+                .querySelectorAll("[data-action]")
+                .forEach((button) =>
+                    button.addEventListener("click", () =>
+                        dispatch({ type: button.dataset.action }),
+                    ),
+                );
+            document
+                .querySelector("#actor-select")
+                .addEventListener("change", (event) =>
+                    dispatch({ type: "setActor", actor: event.target.value }),
+                );
+            document
+                .querySelectorAll("[data-walk]")
+                .forEach((tab) => tab.addEventListener("click", () => startWalk(tab.dataset.walk)));
+            document.querySelector("#walk-next").addEventListener("click", (event) => {
+                const walk = walks[activeWalk];
+                if (event.currentTarget.dataset.finished === "true") {
+                    startWalk(activeWalk);
+                    return;
+                }
+                dispatch({ type: walk.steps[walkIndex].type });
+                walkIndex += 1;
+                renderWalk();
+            });
+            render();
+        </script>
+    </body>
 </html>
