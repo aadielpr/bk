@@ -1,6 +1,6 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
-import { api, storeSession } from "../api";
+import { apiResponse, storeSession } from "../api";
 import type { AuthUser } from "@bk/shared";
 
 export default function LoginPage() {
@@ -15,14 +15,13 @@ export default function LoginPage() {
         setError("");
         setBusy(true);
         try {
-            const { token, user } = await api<{ token: string; user: AuthUser }>(
-                "/api/auth/login",
-                {
-                    method: "POST",
-                    body: JSON.stringify({ username: username(), password: password() }),
-                },
-            );
-            storeSession(token, user);
+            const response = await apiResponse<AuthUser>("/api/v1/auth/login", {
+                method: "POST",
+                body: JSON.stringify({ username: username(), password: password() }),
+            });
+            const token = response.token?.access;
+            if (!token) throw new Error("Token tidak ditemukan");
+            storeSession(token, response.data);
             navigate("/");
         } catch (err) {
             setError((err as Error).message);

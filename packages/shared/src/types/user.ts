@@ -1,9 +1,15 @@
 import * as v from "valibot";
-import { RoleSchema, FarmRoleSchema } from "./role.js";
-import { FarmSchema } from "./farm.js";
+import { ValibotSchema } from "../valibot.schema.js";
+import { FarmRoleSchema, RoleSchema } from "./role.js";
 
-export const UsernameSchema = v.pipe(v.string(), v.minLength(3, "Username minimal 3 karakter"));
-export const PasswordSchema = v.pipe(v.string(), v.minLength(8, "Password minimal 8 karakter"));
+export const UsernameSchema = v.pipe(
+    v.string(),
+    v.minLength(3, "Username must be at least 3 characters"),
+);
+export const PasswordSchema = v.pipe(
+    v.string(),
+    v.minLength(8, "Password must be at least 8 characters"),
+);
 
 export const AuthUserSchema = v.object({
     id: v.number(),
@@ -16,27 +22,31 @@ export const AuthUserSchema = v.object({
 
 export type AuthUser = v.InferOutput<typeof AuthUserSchema>;
 
-export const LoginRequestSchema = v.object({
-    username: v.pipe(v.string(), v.minLength(1, "Username wajib diisi")),
-    password: v.pipe(v.string(), v.minLength(1, "Password wajib diisi")),
-});
+export class UserDto extends ValibotSchema(AuthUserSchema) {}
 
-export const ChangePasswordRequestSchema = v.object({
-    currentPassword: v.string(),
-    newPassword: PasswordSchema,
-});
-
-export const ProvisionUserRequestSchema = v.object({
+export const ProvisionUserBodySchema = v.object({
     username: UsernameSchema,
     password: PasswordSchema,
     role: FarmRoleSchema,
     farmId: v.number(),
 });
 
-export const SetUserActiveRequestSchema = v.object({
+export class ProvisionUserBody extends ValibotSchema(ProvisionUserBodySchema) {}
+
+export type TProvisionUserBody = v.InferOutput<typeof ProvisionUserBodySchema>;
+
+export const SetUserActiveBodySchema = v.object({
     isActive: v.boolean(),
 });
 
-export const ResetUserPasswordRequestSchema = v.object({
+export class SetUserActiveBody extends ValibotSchema(SetUserActiveBodySchema) {}
+
+export type TSetUserActiveBody = v.InferOutput<typeof SetUserActiveBodySchema>;
+
+export const ResetUserPasswordBodySchema = v.object({
     password: PasswordSchema,
 });
+
+export class ResetUserPasswordBody extends ValibotSchema(ResetUserPasswordBodySchema) {}
+
+export type TResetUserPasswordBody = v.InferOutput<typeof ResetUserPasswordBodySchema>;

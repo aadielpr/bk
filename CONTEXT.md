@@ -1,4 +1,4 @@
-# Broiler Farm Management (Recording Pemeliharaan Broiler)
+# Broiler Farm Management
 
 Manages the daily lifecycle, feed consumption, flock mortality, medication expenditure, and final production performance metrics for commercial broiler chicken farming.
 

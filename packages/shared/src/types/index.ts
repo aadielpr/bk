@@ -1,4 +1,5 @@
 export * from "./api.js";
+export * from "./auth.js";
 export * from "./coop.js";
 export * from "./farm.js";
 export * from "./role.js";

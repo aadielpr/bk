@@ -1,10 +1,12 @@
+import type { ApiError, ApiSuccessResponse } from "@bk/shared";
+import type { AuthUser } from "@bk/shared";
+
 const TOKEN_KEY = "bk_token";
 const USER_KEY = "bk_user";
 
-import type { AuthUser } from "@bk/shared";
-
 export function getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
+    return token;
 }
 
 export function getStoredUser(): AuthUser | null {
@@ -22,7 +24,10 @@ export function clearSession() {
     localStorage.removeItem(USER_KEY);
 }
 
-export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiResponse<T>(
+    path: string,
+    init: RequestInit = {},
+): Promise<ApiSuccessResponse<T>> {
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
         ...(init.headers as Record<string, string> | undefined),
@@ -31,11 +36,16 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     if (token) headers.Authorization = `Bearer ${token}`;
 
     const res = await fetch(path, { ...init, headers });
-    const body = await res.json().catch(() => ({}));
+    const body = (await res.json().catch(() => null)) as ApiError | ApiSuccessResponse<T> | null;
 
     if (!res.ok) {
         if (res.status === 401) clearSession();
-        throw new Error((body as { error?: string }).error ?? "Terjadi kesalahan");
+        throw new Error(body?.message ?? "Terjadi kesalahan");
     }
-    return body as T;
+    return body as ApiSuccessResponse<T>;
+}
+
+export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+    const response = await apiResponse<T>(path, init);
+    return response.data;
 }

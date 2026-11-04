@@ -14,7 +14,7 @@ export default function ChangePasswordSection() {
         setNotice("");
         setBusy(true);
         try {
-            await api("/api/auth/change-password", {
+            await api("/api/v1/auth/change-password", {
                 method: "POST",
                 body: JSON.stringify({ currentPassword: current(), newPassword: next() }),
             });

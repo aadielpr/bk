@@ -3,7 +3,7 @@ import { api } from "../api";
 import type { Farm } from "@bk/shared";
 
 export default function FarmsPage() {
-    const [farms, { refetch }] = createResource(() => api<Farm[]>("/api/admin/farms"));
+    const [farms, { refetch }] = createResource(() => api<Farm[]>("/api/v1/admin/farms"));
     const [name, setName] = createSignal("");
     const [error, setError] = createSignal("");
 
@@ -11,7 +11,7 @@ export default function FarmsPage() {
         e.preventDefault();
         setError("");
         try {
-            await api("/api/admin/farms", {
+            await api("/api/v1/admin/farms", {
                 method: "POST",
                 body: JSON.stringify({ name: name() }),
             });

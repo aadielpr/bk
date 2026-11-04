@@ -1,0 +1,677 @@
+{
+    "type": "base",
+    "version": "9",
+    "dialect": "postgres",
+    "id": "158e5ada-9f0d-41aa-b563-19028ec215b2",
+    "prevIds": ["00000000-0000-0000-0000-000000000000"],
+    "footprints": [
+        {
+            "statementType": "create_enum",
+            "statementTarget": ["enum", "public", "user_role"],
+            "writes": [
+                "s|enum|public.user_role",
+                "n|enum|public.user_role",
+                "e|enum|public.user_role",
+                "n|type|public.user_role"
+            ],
+            "reads": ["n|sch|public"]
+        },
+        {
+            "statementType": "create_table",
+            "statementTarget": ["table", "public", "coop_assignments"],
+            "writes": [
+                "s|tbl|public.coop_assignments",
+                "n|tbl|public.coop_assignments",
+                "e|tbl|public.coop_assignments",
+                "n|rel|public.coop_assignments",
+                "n|type|public.coop_assignments",
+                "n|rel|public.coop_assignments_pkey"
+            ],
+            "reads": ["n|sch|public"]
+        },
+        {
+            "statementType": "create_table",
+            "statementTarget": ["table", "public", "coops"],
+            "writes": [
+                "s|tbl|public.coops",
+                "n|tbl|public.coops",
+                "e|tbl|public.coops",
+                "n|rel|public.coops",
+                "n|type|public.coops",
+                "n|rel|public.coops_pkey"
+            ],
+            "reads": ["n|sch|public"]
+        },
+        {
+            "statementType": "create_table",
+            "statementTarget": ["table", "public", "farms"],
+            "writes": [
+                "s|tbl|public.farms",
+                "n|tbl|public.farms",
+                "e|tbl|public.farms",
+                "n|rel|public.farms",
+                "n|type|public.farms",
+                "n|rel|public.farms_pkey"
+            ],
+            "reads": ["n|sch|public"]
+        },
+        {
+            "statementType": "create_table",
+            "statementTarget": ["table", "public", "users"],
+            "writes": [
+                "s|tbl|public.users",
+                "n|tbl|public.users",
+                "e|tbl|public.users",
+                "n|rel|public.users",
+                "n|type|public.users",
+                "n|rel|public.users_pkey"
+            ],
+            "reads": ["n|sch|public", "n|enum|public.user_role"]
+        },
+        {
+            "statementType": "create_index",
+            "statementTarget": [
+                "index",
+                "public",
+                "coop_assignments",
+                "coop_assignments_coop_user_live_idx"
+            ],
+            "writes": [
+                "s|idx|public.coop_assignments_coop_user_live_idx",
+                "n|idx|public.coop_assignments_coop_user_live_idx",
+                "e|idx|public.coop_assignments_coop_user_live_idx",
+                "n|rel|public.coop_assignments_coop_user_live_idx"
+            ],
+            "reads": [
+                "n|tbl|public.coop_assignments",
+                "n|sch|public",
+                "n|col|public.coop_assignments.coop_id",
+                "n|col|public.coop_assignments.user_id"
+            ]
+        },
+        {
+            "statementType": "create_index",
+            "statementTarget": ["index", "public", "users", "users_username_live_idx"],
+            "writes": [
+                "s|idx|public.users_username_live_idx",
+                "n|idx|public.users_username_live_idx",
+                "e|idx|public.users_username_live_idx",
+                "n|rel|public.users_username_live_idx"
+            ],
+            "reads": ["n|tbl|public.users", "n|sch|public", "n|col|public.users.username"]
+        },
+        {
+            "statementType": "create_fk",
+            "statementTarget": ["table", "public", "coop_assignments"],
+            "writes": [
+                "s|fk|public.coop_assignments.coop_assignments_coop_id_coops_id_fkey",
+                "n|fk|public.coop_assignments.coop_assignments_coop_id_coops_id_fkey",
+                "e|fk|public.coop_assignments.coop_assignments_coop_id_coops_id_fkey",
+                "n|con|public.coop_assignments.coop_assignments_coop_id_coops_id_fkey"
+            ],
+            "reads": [
+                "n|tbl|public.coop_assignments",
+                "n|sch|public",
+                "n|tbl|public.coops",
+                "n|sch|public",
+                "n|col|public.coop_assignments.coop_id",
+                "n|col|public.coops.id",
+                "e|uniqueness|public.coops.id"
+            ]
+        },
+        {
+            "statementType": "create_fk",
+            "statementTarget": ["table", "public", "coop_assignments"],
+            "writes": [
+                "s|fk|public.coop_assignments.coop_assignments_user_id_users_id_fkey",
+                "n|fk|public.coop_assignments.coop_assignments_user_id_users_id_fkey",
+                "e|fk|public.coop_assignments.coop_assignments_user_id_users_id_fkey",
+                "n|con|public.coop_assignments.coop_assignments_user_id_users_id_fkey"
+            ],
+            "reads": [
+                "n|tbl|public.coop_assignments",
+                "n|sch|public",
+                "n|tbl|public.users",
+                "n|sch|public",
+                "n|col|public.coop_assignments.user_id",
+                "n|col|public.users.id",
+                "e|uniqueness|public.users.id"
+            ]
+        },
+        {
+            "statementType": "create_fk",
+            "statementTarget": ["table", "public", "coops"],
+            "writes": [
+                "s|fk|public.coops.coops_farm_id_farms_id_fkey",
+                "n|fk|public.coops.coops_farm_id_farms_id_fkey",
+                "e|fk|public.coops.coops_farm_id_farms_id_fkey",
+                "n|con|public.coops.coops_farm_id_farms_id_fkey"
+            ],
+            "reads": [
+                "n|tbl|public.coops",
+                "n|sch|public",
+                "n|tbl|public.farms",
+                "n|sch|public",
+                "n|col|public.coops.farm_id",
+                "n|col|public.farms.id",
+                "e|uniqueness|public.farms.id"
+            ]
+        },
+        {
+            "statementType": "create_fk",
+            "statementTarget": ["table", "public", "users"],
+            "writes": [
+                "s|fk|public.users.users_farm_id_farms_id_fkey",
+                "n|fk|public.users.users_farm_id_farms_id_fkey",
+                "e|fk|public.users.users_farm_id_farms_id_fkey",
+                "n|con|public.users.users_farm_id_farms_id_fkey"
+            ],
+            "reads": [
+                "n|tbl|public.users",
+                "n|sch|public",
+                "n|tbl|public.farms",
+                "n|sch|public",
+                "n|col|public.users.farm_id",
+                "n|col|public.farms.id",
+                "e|uniqueness|public.farms.id"
+            ]
+        }
+    ],
+    "ddl": [
+        {
+            "schema": "public",
+            "name": "coop_assignments",
+            "isRlsEnabled": false,
+            "entityType": "tables"
+        },
+        {
+            "schema": "public",
+            "name": "coops",
+            "isRlsEnabled": false,
+            "entityType": "tables"
+        },
+        {
+            "schema": "public",
+            "name": "farms",
+            "isRlsEnabled": false,
+            "entityType": "tables"
+        },
+        {
+            "schema": "public",
+            "name": "users",
+            "isRlsEnabled": false,
+            "entityType": "tables"
+        },
+        {
+            "schema": "public",
+            "name": "user_role",
+            "values": ["owner", "operator", "super_admin"],
+            "entityType": "enums"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "id",
+            "type": "serial",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "coop_id",
+            "type": "integer",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "user_id",
+            "type": "integer",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "c_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": "now()",
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "u_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "d_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "id",
+            "type": "serial",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "farm_id",
+            "type": "integer",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "name",
+            "type": "text",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "c_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": "now()",
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "u_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "d_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "farms",
+            "name": "id",
+            "type": "serial",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "farms",
+            "name": "name",
+            "type": "text",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "farms",
+            "name": "c_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": "now()",
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "farms",
+            "name": "u_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "farms",
+            "name": "d_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "id",
+            "type": "serial",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "username",
+            "type": "text",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "password_hash",
+            "type": "text",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "role",
+            "type": "user_role",
+            "typeSchema": "public",
+            "notNull": true,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "farm_id",
+            "type": "integer",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "c_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": true,
+            "dimensions": 0,
+            "default": "now()",
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "u_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "d_at",
+            "type": "timestamp with time zone",
+            "typeSchema": null,
+            "notNull": false,
+            "dimensions": 0,
+            "default": null,
+            "generated": null,
+            "identity": null,
+            "entityType": "columns"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "coop_assignments_coop_user_live_idx",
+            "nameExplicit": true,
+            "columns": [
+                {
+                    "value": "coop_id",
+                    "isExpression": false,
+                    "asc": true,
+                    "nullsFirst": false,
+                    "opclass": null
+                },
+                {
+                    "value": "user_id",
+                    "isExpression": false,
+                    "asc": true,
+                    "nullsFirst": false,
+                    "opclass": null
+                }
+            ],
+            "isUnique": true,
+            "where": "\"d_at\" IS NULL",
+            "with": "",
+            "method": "btree",
+            "concurrently": false,
+            "entityType": "indexes"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "users_username_live_idx",
+            "nameExplicit": true,
+            "columns": [
+                {
+                    "value": "username",
+                    "isExpression": false,
+                    "asc": true,
+                    "nullsFirst": false,
+                    "opclass": null
+                }
+            ],
+            "isUnique": true,
+            "where": "\"d_at\" IS NULL",
+            "with": "",
+            "method": "btree",
+            "concurrently": false,
+            "entityType": "indexes"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "coop_assignments_coop_id_coops_id_fkey",
+            "nameExplicit": false,
+            "columns": ["coop_id"],
+            "schemaTo": "public",
+            "tableTo": "coops",
+            "columnsTo": ["id"],
+            "onUpdate": "NO ACTION",
+            "onDelete": "NO ACTION",
+            "entityType": "fks"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "coop_assignments_user_id_users_id_fkey",
+            "nameExplicit": false,
+            "columns": ["user_id"],
+            "schemaTo": "public",
+            "tableTo": "users",
+            "columnsTo": ["id"],
+            "onUpdate": "NO ACTION",
+            "onDelete": "NO ACTION",
+            "entityType": "fks"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "coops_farm_id_farms_id_fkey",
+            "nameExplicit": false,
+            "columns": ["farm_id"],
+            "schemaTo": "public",
+            "tableTo": "farms",
+            "columnsTo": ["id"],
+            "onUpdate": "NO ACTION",
+            "onDelete": "NO ACTION",
+            "entityType": "fks"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "users_farm_id_farms_id_fkey",
+            "nameExplicit": false,
+            "columns": ["farm_id"],
+            "schemaTo": "public",
+            "tableTo": "farms",
+            "columnsTo": ["id"],
+            "onUpdate": "NO ACTION",
+            "onDelete": "NO ACTION",
+            "entityType": "fks"
+        },
+        {
+            "schema": "public",
+            "table": "coop_assignments",
+            "name": "coop_assignments_pkey",
+            "columns": ["id"],
+            "nameExplicit": false,
+            "entityType": "pks"
+        },
+        {
+            "schema": "public",
+            "table": "coops",
+            "name": "coops_pkey",
+            "columns": ["id"],
+            "nameExplicit": false,
+            "entityType": "pks"
+        },
+        {
+            "schema": "public",
+            "table": "farms",
+            "name": "farms_pkey",
+            "columns": ["id"],
+            "nameExplicit": false,
+            "entityType": "pks"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "users_pkey",
+            "columns": ["id"],
+            "nameExplicit": false,
+            "entityType": "pks"
+        },
+        {
+            "schema": "public",
+            "table": "users",
+            "name": "users_farm_id_matches_role",
+            "value": "((\"role\" = 'super_admin') AND \"farm_id\" IS NULL) OR ((\"role\" <> 'super_admin') AND \"farm_id\" IS NOT NULL)",
+            "entityType": "checks"
+        }
+    ]
+}

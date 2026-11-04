@@ -1,4 +1,5 @@
 import * as v from "valibot";
+import { ValibotSchema } from "../valibot.schema.js";
 
 export const CoopSchema = v.object({
     id: v.number(),
@@ -10,10 +11,18 @@ export const CoopSchema = v.object({
 
 export type Coop = v.InferOutput<typeof CoopSchema>;
 
-export const CoopNameRequestSchema = v.object({
-    name: v.pipe(v.string(), v.minLength(1, "Nama kandang wajib diisi")),
+export const CoopNameBodySchema = v.object({
+    name: v.pipe(v.string(), v.minLength(1, "Coop name is required")),
 });
 
-export const OperatorAssignmentRequestSchema = v.object({
+export class CoopNameBody extends ValibotSchema(CoopNameBodySchema) {}
+
+export type TCoopNameBody = v.InferOutput<typeof CoopNameBodySchema>;
+
+export const OperatorAssignmentBodySchema = v.object({
     operatorIds: v.array(v.number()),
 });
+
+export class OperatorAssignmentBody extends ValibotSchema(OperatorAssignmentBodySchema) {}
+
+export type TOperatorAssignmentBody = v.InferOutput<typeof OperatorAssignmentBodySchema>;

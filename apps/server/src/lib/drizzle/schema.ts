@@ -1,6 +1,5 @@
 import { sql } from "drizzle-orm";
 import {
-    boolean,
     check,
     integer,
     pgEnum,
@@ -13,24 +12,34 @@ import {
 
 export const userRole = pgEnum("user_role", ["owner", "operator", "super_admin"]);
 
+function timestamps() {
+    return {
+        cAt: timestamp("c_at", { withTimezone: true }).notNull().defaultNow(),
+        uAt: timestamp("u_at", { withTimezone: true }),
+        dAt: timestamp("d_at", { withTimezone: true }),
+    };
+}
+
 export const farms = pgTable("farms", {
     id: serial("id").primaryKey(),
     name: text("name").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps(),
 });
 
 export const users = pgTable(
     "users",
     {
         id: serial("id").primaryKey(),
-        username: text("username").notNull().unique(),
+        username: text("username").notNull(),
         passwordHash: text("password_hash").notNull(),
         role: userRole("role").notNull(),
         farmId: integer("farm_id").references(() => farms.id),
-        isActive: boolean("is_active").notNull().default(true),
-        createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+        ...timestamps(),
     },
     (t) => [
+        uniqueIndex("users_username_live_idx")
+            .on(t.username)
+            .where(sql`${t.dAt} IS NULL`),
         check(
             "users_farm_id_matches_role",
             sql`((${t.role} = 'super_admin') AND ${t.farmId} IS NULL) OR ((${t.role} <> 'super_admin') AND ${t.farmId} IS NOT NULL)`,
@@ -44,7 +53,7 @@ export const coops = pgTable("coops", {
         .notNull()
         .references(() => farms.id),
     name: text("name").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    ...timestamps(),
 });
 
 export const coopAssignments = pgTable(
@@ -57,6 +66,11 @@ export const coopAssignments = pgTable(
         userId: integer("user_id")
             .notNull()
             .references(() => users.id),
+        ...timestamps(),
     },
-    (t) => [uniqueIndex("coop_assignments_coop_user_idx").on(t.coopId, t.userId)],
+    (t) => [
+        uniqueIndex("coop_assignments_coop_user_live_idx")
+            .on(t.coopId, t.userId)
+            .where(sql`${t.dAt} IS NULL`),
+    ],
 );

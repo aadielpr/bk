@@ -10,10 +10,10 @@ interface Operator {
 }
 
 export default function CoopsPage(props: { user: AuthUser }) {
-    const [coops, { refetch }] = createResource(() => api<Coop[]>("/api/coops"));
+    const [coops, { refetch }] = createResource(() => api<Coop[]>("/api/v1/coops"));
     const [operators] = createResource(
         () => props.user.role === Role.OWNER,
-        (isOwner) => (isOwner ? api<Operator[]>("/api/operators") : Promise.resolve([])),
+        (isOwner) => (isOwner ? api<Operator[]>("/api/v1/coops/operators") : Promise.resolve([])),
     );
     const [newName, setNewName] = createSignal("");
     const [openCoop, setOpenCoop] = createSignal<number | null>(null);
@@ -25,7 +25,10 @@ export default function CoopsPage(props: { user: AuthUser }) {
         e.preventDefault();
         setError("");
         try {
-            await api("/api/coops", { method: "POST", body: JSON.stringify({ name: newName() }) });
+            await api("/api/v1/coops", {
+                method: "POST",
+                body: JSON.stringify({ name: newName() }),
+            });
             setNewName("");
             refetch();
         } catch (err) {
@@ -36,7 +39,7 @@ export default function CoopsPage(props: { user: AuthUser }) {
     async function renameCoop(id: number, name: string) {
         setError("");
         try {
-            await api(`/api/coops/${id}`, { method: "PATCH", body: JSON.stringify({ name }) });
+            await api(`/api/v1/coops/${id}`, { method: "PATCH", body: JSON.stringify({ name }) });
             refetch();
         } catch (err) {
             setError((err as Error).message);
@@ -46,7 +49,7 @@ export default function CoopsPage(props: { user: AuthUser }) {
     async function saveAssignment(coop: Coop, operatorIds: number[]) {
         setError("");
         try {
-            await api(`/api/coops/${coop.id}/operators`, {
+            await api(`/api/v1/coops/${coop.id}/operators`, {
                 method: "PUT",
                 body: JSON.stringify({ operatorIds }),
             });

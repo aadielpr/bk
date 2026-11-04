@@ -4,8 +4,8 @@ import type { AuthUser, Farm } from "@bk/shared";
 import { Role } from "@bk/shared";
 
 export default function UsersPage() {
-    const [users, { refetch }] = createResource(() => api<AuthUser[]>("/api/admin/users"));
-    const [farms] = createResource(() => api<Farm[]>("/api/admin/farms"));
+    const [users, { refetch }] = createResource(() => api<AuthUser[]>("/api/v1/admin/users"));
+    const [farms] = createResource(() => api<Farm[]>("/api/v1/admin/farms"));
 
     const [username, setUsername] = createSignal("");
     const [password, setPassword] = createSignal("");
@@ -23,7 +23,7 @@ export default function UsersPage() {
         setNotice("");
         setBusy(true);
         try {
-            await api("/api/admin/users", {
+            await api("/api/v1/admin/users", {
                 method: "POST",
                 body: JSON.stringify({
                     username: username(),
@@ -47,7 +47,7 @@ export default function UsersPage() {
         setError("");
         setNotice("");
         try {
-            await api(`/api/admin/users/${user.id}/active`, {
+            await api(`/api/v1/admin/users/${user.id}/active`, {
                 method: "PATCH",
                 body: JSON.stringify({ isActive: !user.isActive }),
             });
@@ -63,7 +63,7 @@ export default function UsersPage() {
         setError("");
         setNotice("");
         try {
-            await api(`/api/admin/users/${user.id}/password`, {
+            await api(`/api/v1/admin/users/${user.id}/password`, {
                 method: "PATCH",
                 body: JSON.stringify({ password: newPassword }),
             });

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from "bun:test";
 import {
     adminFetch,
+    BASE,
     startServer,
     closeServer,
     resetDb,
@@ -16,12 +17,14 @@ beforeAll(startServer);
 afterAll(closeServer);
 beforeEach(resetDb);
 
-describe("POST /api/auth/login", () => {
+describe("POST /api/v1/auth/login", () => {
     test("logs in the Super Admin and returns token + user", async () => {
         const { res, body } = await login(SA_USER, SA_PASS);
         expect(res.status).toBe(200);
-        expect(body.token).toBeString();
-        expect(body.user.role).toBe("super_admin");
+        expect(body.ok).toBe(true);
+        expect(body.statusCode).toBe(200);
+        expect(body.token.access).toBeString();
+        expect(body.data.role).toBe("super_admin");
     });
 
     test("rejects a wrong password", async () => {
@@ -38,7 +41,7 @@ describe("POST /api/auth/login", () => {
         const token = await superAdminToken();
         const farm = await createFarm(token, "Farm X");
         const user = await provisionUser(token, "owner", farm.id);
-        await adminFetch(token, `/api/admin/users/${user.id}/active`, {
+        await adminFetch(token, `/api/v1/admin/users/${user.id}/active`, {
             method: "PATCH",
             body: JSON.stringify({ isActive: false }),
         });
@@ -48,14 +51,25 @@ describe("POST /api/auth/login", () => {
     });
 });
 
-describe("POST /api/auth/change-password", () => {
+describe("Public registration", () => {
+    test("there is no self-registration route", async () => {
+        const res = await fetch(`${BASE}/api/v1/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: "selfsignup", password: "password123" }),
+        });
+        expect(res.status).toBe(404);
+    });
+});
+
+describe("POST /api/v1/auth/change-password", () => {
     test("user changes own password; old password stops working", async () => {
         const token = await superAdminToken();
         const farm = await createFarm(token, "Farm A");
         const owner = await provisionUser(token, "owner", farm.id);
-        const ownerToken = (await login(owner.username, "password123")).body.token;
+        const ownerToken = (await login(owner.username, "password123")).body.token.access;
 
-        const res = await adminFetch(ownerToken, "/api/auth/change-password", {
+        const res = await adminFetch(ownerToken, "/api/v1/auth/change-password", {
             method: "POST",
             body: JSON.stringify({ currentPassword: "password123", newPassword: "brandnewpass1" }),
         });
@@ -72,15 +86,15 @@ describe("POST /api/auth/change-password", () => {
         const token = await superAdminToken();
         const farm = await createFarm(token, "Farm A");
         const owner = await provisionUser(token, "owner", farm.id);
-        const ownerToken = (await login(owner.username, "password123")).body.token;
+        const ownerToken = (await login(owner.username, "password123")).body.token.access;
 
-        const wrongCurrent = await adminFetch(ownerToken, "/api/auth/change-password", {
+        const wrongCurrent = await adminFetch(ownerToken, "/api/v1/auth/change-password", {
             method: "POST",
             body: JSON.stringify({ currentPassword: "wrongpass", newPassword: "brandnewpass1" }),
         });
         expect(wrongCurrent.status).toBe(400);
 
-        const tooShort = await adminFetch(ownerToken, "/api/auth/change-password", {
+        const tooShort = await adminFetch(ownerToken, "/api/v1/auth/change-password", {
             method: "POST",
             body: JSON.stringify({ currentPassword: "password123", newPassword: "short" }),
         });
